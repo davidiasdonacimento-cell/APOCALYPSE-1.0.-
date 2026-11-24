@@ -404,7 +404,10 @@ void addBox(std::vector<Vertex>& out,float x,float y,float z,float w,float h,flo
 }
 void appendWeaponMesh(std::vector<Vertex>& out,int weapon,float recoil){
     std::vector<Vertex> local;
-    if(weapon==1){
+    if(weapon==0){
+        ellipsoid(local,0.30f,1.00f,-0.66f+recoil,0.13f,0.11f,0.20f,0.10f,0.43f,0.58f,8,12);
+        ellipsoid(local,0.30f,1.00f,-0.82f+recoil,0.075f,0.07f,0.08f,0.32f,0.82f,0.95f,8,10);
+    } else if(weapon==1){
         const float cx=0.32f,cy=1.06f,cz=-0.73f+recoil,outer=0.19f,inner=0.065f;
         const float px[8]={cx,cx+inner,cx+outer,cx+inner,cx,cx-inner,cx-outer,cx-inner};
         const float py[8]={cy+outer,cy+inner,cy,cy-inner,cy-outer,cy-inner,cy,cy+inner};
@@ -459,6 +462,11 @@ void buildSurvivalMesh(std::vector<Vertex>& mesh){
         ellipsoid(mesh,z.x-0.072f,1.49f,z.z-0.176f,0.026f,0.018f,0.012f,0.12f,0.035f,0.025f,6,8);
         ellipsoid(mesh,z.x+0.072f,1.49f,z.z-0.176f,0.026f,0.018f,0.012f,0.12f,0.035f,0.025f,6,8);
         ellipsoid(mesh,z.x,1.385f,z.z-0.179f,0.035f,0.012f,0.012f,0.18f,0.055f,0.045f,6,8);
+    }
+    for(const auto& impact:survival.impacts()){
+        const float pulse=impact.life/0.22f;
+        const float radius=0.10f+(1.0f-pulse)*0.28f;
+        ellipsoid(mesh,impact.x,1.05f,impact.z,radius,radius*0.8f,radius,1.0f,0.72f,0.28f,6,8);
     }
     for(const auto& shot:survival.projectiles()){
         float r=0.78f,g=0.84f,b=0.92f;
