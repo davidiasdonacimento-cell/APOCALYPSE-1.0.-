@@ -113,12 +113,13 @@ Manter módulos separados por responsabilidade, evitando tanto um arquivo monol�
 
 Um recurso só será considerado concluído quando estiver implementado, integrado, compilado e testado no ambiente-alvo, com tratamento básico de falhas. A compilação pelo celular deve ser demonstrada antes de assumir que o fluxo é viável.
 
-## Estado inicial
+## Estado atual verificado no repositório
 
-- Repositório APOCALYPSE 1.0 criado.
-- Planejamento registrado neste README.
-- Referência a Unreal Engine removida e explicitamente descartada.
-- Tecnologia do BATTLE UNIVERSE: pendente de inspeção do código real.
-- Compilação completa diretamente no Android: ainda não validada.
-- Código de jogo: ainda não adicionado.
-- APK: ainda não gerado.
+- Repositório APOCALYPSE 1.0 criado e com código Android/NDK presente.
+- Base declarada: Java + C++17 + OpenGL ES 3.0 + Gradle + CMake.
+- Cena nativa contém um blockout urbano procedural, personagem de teste, joystick e câmera de acompanhamento.
+- Fase 3 tem módulo C++ separado para zumbis, estados de patrulha/perseguição, vida, coleta de recursos e combate arcade fictício; HUD e botão de pulso foram ligados à Activity Android.
+- Lobby atual é uma tela de menu Android; não é ainda um lobby 3D com Verity visível e animações.
+- Verity tem uma Activity separada de conversa/voz; não é uma personagem 3D animada.
+- Interações de lobby com Verity continuam pendentes conforme Docs/LOBBY_VERITY_INTERACOES.md.
+- Compilação Android, teste no aparelho e APK: ainda não validados/gerados.
