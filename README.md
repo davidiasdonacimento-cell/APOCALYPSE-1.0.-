@@ -119,7 +119,7 @@ Um recurso só será considerado concluído quando estiver implementado, integra
 - Base declarada: Java + C++17 + OpenGL ES 3.0 + Gradle + CMake.
 - Cena nativa contém um blockout urbano procedural, personagem de teste, joystick e câmera de acompanhamento.
 - Fase 3 tem módulo C++ separado para zumbis, estados de patrulha/perseguição, vida, coleta de recursos e combate arcade fictício; HUD e botão de pulso foram ligados à Activity Android.
-- `Verity3DActivity` e `verity_3d.cpp` adicionam uma primeira personagem low-poly procedural em OpenGL ES 3.0, com câmera em perspectiva e lobby pré-partida. Rig, animações completas e validação no aparelho continuam pendentes.
+- `Verity3DActivity` e `verity_3d.cpp` adicionam uma primeira personagem low-poly procedural em OpenGL ES 3.0, com câmera em perspectiva e lobby pré-partida. Rig procedural por juntas, caminhada demonstrativa, aceno, piscar e boca animada para fala já foram adicionados ao código. Skinning por pesos, deslocamento real, expressões avançadas e validação no aparelho continuam pendentes.
 - Verity tem uma Activity separada de conversa/voz; não é uma personagem 3D animada.
 - Proximidade real, movimento até Verity, rig e animações 3D completas continuam pendentes conforme Docs/LOBBY_VERITY_INTERACOES.md.
 - Compilação Android, teste no aparelho e APK: ainda não validados/gerados.
