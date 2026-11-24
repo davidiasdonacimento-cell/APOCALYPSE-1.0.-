@@ -18,10 +18,11 @@ static double androidGetCurrentTimeNanos(){struct timespec t{};clock_gettime(CLO
 
 namespace {
 struct Vertex { float x,y,z,r,g,b,u,v,material; };
-GLuint program=0, vertexBuffer=0, playerBuffer=0, survivalBuffer=0;
+GLuint program=0, vertexBuffer=0, playerBuffer=0, survivalBuffer=0, weaponBuffer=0;
 GLuint surfaceTextures[3]={0,0,0};
 GLint vertexCount=0, playerVertexCount=0;
 int surfaceWidth=1, surfaceHeight=1;
+float weaponRecoil=0.0f;
 float playerX=0.0f, playerZ=0.0f, moveX=0.0f, moveZ=0.0f;
 bool playerWasMoving=false;
 float facingX=0.0f, facingZ=-1.0f;
@@ -401,6 +402,34 @@ void addBox(std::vector<Vertex>& out,float x,float y,float z,float w,float h,flo
     auto face=[&](Vertex p,Vertex q,Vertex t,Vertex u){tri(p,q,t);tri(p,t,u);};
     face(A,B,C,D);face(a,b0,B,A);face(b0,c,C,B);face(c,d0,D,C);face(d0,a,A,D);
 }
+void appendWeaponMesh(std::vector<Vertex>& out,int weapon,float recoil){
+    std::vector<Vertex> local;
+    if(weapon==1){
+        const float cx=0.32f,cy=1.06f,cz=-0.73f+recoil,outer=0.19f,inner=0.065f;
+        const float px[8]={cx,cx+inner,cx+outer,cx+inner,cx,cx-inner,cx-outer,cx-inner};
+        const float py[8]={cy+outer,cy+inner,cy,cy-inner,cy-outer,cy-inner,cy,cy+inner};
+        for(int i=0;i<8;i++){int j=(i+1)%8;local.push_back(v(cx,cy,cz,0.68f,0.73f,0.78f));local.push_back(v(px[i],py[i],cz,0.78f,0.82f,0.86f));local.push_back(v(px[j],py[j],cz,0.52f,0.58f,0.64f));}
+        addBox(local,cx-0.035f,cy-0.035f,cz-0.025f,0.07f,0.07f,0.05f,0.22f,0.25f,0.29f);
+    } else {
+        const bool shotgun=weapon==3;
+        addBox(local,0.25f,0.99f,-0.92f+recoil,0.18f,shotgun?0.25f:0.18f,0.43f,0.16f,0.18f,0.19f);
+        addBox(local,0.29f,0.88f,-0.75f+recoil,0.105f,0.18f,0.13f,0.12f,0.13f,0.14f);
+        addBox(local,0.27f,0.91f,-0.55f+recoil,0.14f,0.12f,0.27f,0.20f,0.21f,0.19f);
+        if(shotgun){
+            addBox(local,0.265f,1.055f,-1.38f+recoil,0.055f,0.055f,0.53f,0.24f,0.25f,0.25f);
+            addBox(local,0.355f,1.055f,-1.38f+recoil,0.055f,0.055f,0.53f,0.24f,0.25f,0.25f);
+            addBox(local,0.255f,0.91f,-1.00f+recoil,0.20f,0.10f,0.23f,0.29f,0.22f,0.16f);
+            addBox(local,0.285f,1.20f,-0.88f+recoil,0.12f,0.035f,0.18f,0.08f,0.09f,0.10f);
+        } else {
+            addBox(local,0.315f,1.055f,-1.34f+recoil,0.07f,0.07f,0.53f,0.23f,0.24f,0.25f);
+            addBox(local,0.29f,0.82f,-0.88f+recoil,0.12f,0.15f,0.15f,0.11f,0.12f,0.13f);
+            addBox(local,0.29f,1.18f,-0.88f+recoil,0.10f,0.08f,0.20f,0.08f,0.10f,0.12f);
+            addBox(local,0.285f,1.265f,-0.91f+recoil,0.13f,0.035f,0.20f,0.24f,0.26f,0.27f);
+        }
+    }
+    const float rightX=-facingZ,rightZ=facingX;
+    for(const auto& p:local){Vertex q=p;q.x=playerX+rightX*p.x-facingX*p.z;q.z=playerZ+rightZ*p.x-facingZ*p.z;out.push_back(q);}
+}
 void buildSurvivalMesh(std::vector<Vertex>& mesh){
     mesh.clear();
     for(const auto& z:survival.zombies()){
@@ -430,6 +459,12 @@ void buildSurvivalMesh(std::vector<Vertex>& mesh){
         ellipsoid(mesh,z.x-0.072f,1.49f,z.z-0.176f,0.026f,0.018f,0.012f,0.12f,0.035f,0.025f,6,8);
         ellipsoid(mesh,z.x+0.072f,1.49f,z.z-0.176f,0.026f,0.018f,0.012f,0.12f,0.035f,0.025f,6,8);
         ellipsoid(mesh,z.x,1.385f,z.z-0.179f,0.035f,0.012f,0.012f,0.18f,0.055f,0.045f,6,8);
+    }
+    for(const auto& shot:survival.projectiles()){
+        float r=0.78f,g=0.84f,b=0.92f;
+        if(shot.weapon==2){r=0.35f;g=0.88f;b=1.0f;}
+        if(shot.weapon==3){r=1.0f;g=0.66f;b=0.24f;}
+        ellipsoid(mesh,shot.x,1.12f,shot.z,0.075f,0.055f,0.13f,r,g,b,6,8);
     }
     for(const auto& p:survival.pickups()){
         if(!p.active) continue;
@@ -511,6 +546,7 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
         movePlayerWithCollision(moveX*step,moveZ*step);
     }
     { std::lock_guard<std::mutex> lock(survivalMutex); survival.update(dt,playerX,playerZ); }
+    weaponRecoil=fmaxf(0.0f,weaponRecoil-dt*0.95f);
     const bool playerMoving=length>0.01f;
     if(playerMoving||playerWasMoving){
         addPlayerModel(playerMoving?(float)now*8.0f:0.0f);
@@ -563,13 +599,30 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(6*sizeof(float)));
     glVertexAttribPointer(3,1,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(8*sizeof(float)));
     glDrawArrays(GL_TRIANGLES,0,playerVertexCount);
+    std::vector<Vertex> heldWeapon;
+    int selectedWeapon=0;
+    { std::lock_guard<std::mutex> lock(survivalMutex); selectedWeapon=survival.weapon(); }
+    appendWeaponMesh(heldWeapon,selectedWeapon,weaponRecoil);
+    if(!heldWeapon.empty()){
+        if(!weaponBuffer) glGenBuffers(1,&weaponBuffer);
+        glUniformMatrix4fv(mvpLocation,1,GL_FALSE,viewProjection.m);
+        glBindBuffer(GL_ARRAY_BUFFER,weaponBuffer);
+        glBufferData(GL_ARRAY_BUFFER,(GLsizeiptr)(heldWeapon.size()*sizeof(Vertex)),heldWeapon.data(),GL_DYNAMIC_DRAW);
+        glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)0);
+        glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(3*sizeof(float)));
+        glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(6*sizeof(float)));
+        glVertexAttribPointer(3,1,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(8*sizeof(float)));
+        glDrawArrays(GL_TRIANGLES,0,(GLsizei)heldWeapon.size());
+    }
     apocalypse::renderVerityCompanion(viewProjection.m,playerX+1.72f,playerZ+0.18f,length>0.01f);
     glDisableVertexAttribArray(0);glDisableVertexAttribArray(1);glDisableVertexAttribArray(2);glDisableVertexAttribArray(3);
 }
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeAttack(JNIEnv*,jclass){
     std::lock_guard<std::mutex> lock(survivalMutex);
-    return survival.usePulse(playerX,playerZ)?JNI_TRUE:JNI_FALSE;
+    const bool fired=survival.fireWeapon(playerX,playerZ,facingX,facingZ);
+    if(fired) weaponRecoil=0.13f;
+    return fired?JNI_TRUE:JNI_FALSE;
 }
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativePurchase(JNIEnv*,jclass,jint item){
