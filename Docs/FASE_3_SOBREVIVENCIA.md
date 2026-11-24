@@ -70,3 +70,12 @@ Os nomes são propostas e devem ser adaptados à estrutura real existente após 
 - Integração CMake: `survival_system.cpp` incluído na biblioteca nativa.
 - Implementação de código da Fase 3: enviada ao GitHub; ainda não validada por compilação.
 - Compilação e teste no Android: pendentes.
+
+
+## Atualização visual dos zumbis — 24/11/2026
+- A renderização não usa sprites PNG para os zumbis do sistema de sobrevivência: as entidades são geradas como malhas volumétricas no C++.
+- O corpo foi dividido em volumes 3D para pelve, tronco, pescoço, cabeça, ombros, braços, mãos, pernas e botas.
+- Olhos, boca e detalhes do casaco melhoram a leitura visual de frente.
+- A fase procedural avança tanto em patrulha quanto em perseguição e anima braços/pernas com uma oscilação simples.
+- Limitação: isso ainda é um modelo low-poly procedural, não um personagem escaneado ou asset artístico rigado. Skinning e animação esquelética completa continuam pendentes.
+- A nova malha precisa de compilação e teste visual no Redmi 12 antes de ser considerada validada.
