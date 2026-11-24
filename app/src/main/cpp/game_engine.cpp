@@ -482,6 +482,7 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     importedModels.render(viewProjection.m);
     glUseProgram(program);
     for(int i=0;i<3;i++){glActiveTexture(GL_TEXTURE0+i);glBindTexture(GL_TEXTURE_2D,surfaceTextures[i]);glUniform1i(glGetUniformLocation(program,texNames[i]),i);}
+    glEnableVertexAttribArray(0);glEnableVertexAttribArray(1);glEnableVertexAttribArray(2);glEnableVertexAttribArray(3);
     std::vector<Vertex> dynamicMesh;
     buildSurvivalMesh(dynamicMesh);
     if(!dynamicMesh.empty()){
