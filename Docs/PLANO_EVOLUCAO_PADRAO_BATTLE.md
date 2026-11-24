@@ -86,7 +86,9 @@ O APOCALYPSE deve adaptar os padrões adequados, sem copiar contas, loja, regras
 - Auditoria comparativa BATTLE/APOCALYPSE: concluída em 24/11/2026.
 - Roadmap técnico: documentado.
 - Etapa A — primeiro incremento de código enviado: `math3d.h` com matrizes 4x4, perspectiva, câmera look-at e translação; `game_engine.cpp` agora usa câmera de terceira pessoa em perspectiva e iluminação direcional calculada no shader.
-- A cidade, os zumbis, os itens e o jogador continuam usando a geometria procedural existente; ainda não há modelos artísticos/texturas de alta resolução nem pacote de conteúdo externo.
-- Build CI após esta alteração: aguardando resultado.
+- Etapa C — primeiro distrito urbano expandido no código: edifícios com fachadas/janelas/portas, variação de alturas e usos, anexo do hospital, parque com caminhos e árvores, postes, carros abandonados, marcações de pista, entulho e cercas procedurais.
+- A expansão é geometria procedural consumida pelo renderer; não é um pacote de dezenas de MB e não deve ser confundida com assets artísticos finais.
+- Ainda pendentes: modelos 3D artísticos, texturas de cenário, interiores realmente acessíveis, colisão de edifícios, chunks e validação de desempenho.
+- Build CI após a expansão: aguardando resultado.
 - Teste físico no Redmi 12: pendente.
-- Próximo incremento: melhorar a malha do cenário e do personagem com geometria reutilizável, sem inflar o APK com arquivos sem uso.
+- Próximo incremento: colisões e navegação do distrito; depois adicionar um conjunto de texturas reais e modelos otimizados.
