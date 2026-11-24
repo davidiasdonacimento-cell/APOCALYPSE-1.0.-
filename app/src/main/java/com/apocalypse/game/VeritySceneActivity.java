@@ -77,12 +77,28 @@ public final class VeritySceneActivity extends Activity {
         if(getIntent().getBooleanExtra("settings",false))configureEndpoint();
     }
     private void configureEndpoint(){
-        final EditText field=new EditText(this);field.setSingleLine(true);field.setText(prefs.getString("verity_endpoint",""));field.setHint("URL /v1/chat/completions");
-        new android.app.AlertDialog.Builder(this).setTitle("Endpoint da IA")
-          .setMessage("Use um endpoint compatível com OpenAI, por exemplo um modelo local na sua rede. Não coloque chaves secretas no repositório.")
-          .setView(field).setNegativeButton("Cancelar",null).setPositiveButton("Salvar",(d,w)->{
-              String url=field.getText().toString().trim();prefs.edit().putString("verity_endpoint",url).apply();
-              setStatus(url.isEmpty()?"Endpoint não configurado.":"Endpoint salvo. A conexão será testada ao enviar uma mensagem.");
+        LinearLayout form=new LinearLayout(this);
+        form.setOrientation(LinearLayout.VERTICAL);
+        form.setPadding(dp(18),dp(8),dp(18),dp(4));
+        final EditText field=new EditText(this);
+        field.setSingleLine(true);
+        field.setText(prefs.getString("verity_endpoint",""));
+        field.setHint("URL /v1/chat/completions");
+        form.addView(field);
+        final EditText token=new EditText(this);
+        token.setSingleLine(true);
+        token.setInputType( android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        token.setText(prefs.getString("verity_gateway_token",""));
+        token.setHint("Token privado do gateway Render");
+        form.addView(token);
+        new android.app.AlertDialog.Builder(this).setTitle("Conectar API da VERITY")
+          .setMessage("Informe o endereço do serviço Render e o token privado configurado nele. Não use a chave do provedor de IA neste campo.")
+          .setView(form).setNegativeButton("Cancelar",null).setPositiveButton("Salvar",(d,w)->{
+              String url=field.getText().toString().trim();
+              String accessToken=token.getText().toString().trim();
+              prefs.edit().putString("verity_endpoint",url)
+                  .putString("verity_gateway_token",accessToken).apply();
+              setStatus(url.isEmpty()?"Endpoint não configurado.":"API salva. A conexão será testada ao enviar uma mensagem.");
           }).show();
     }
     private void sendMessage(){
@@ -101,7 +117,7 @@ public final class VeritySceneActivity extends Activity {
                 JSONObject body=new JSONObject();body.put("model","local-model");body.put("messages",history);
                 body.put("temperature",0.85);body.put("stream",false);
                 c=(HttpURLConnection)new URL(endpoint).openConnection();c.setRequestMethod("POST");c.setConnectTimeout(12000);c.setReadTimeout(45000);
-                c.setDoOutput(true);c.setRequestProperty("Content-Type","application/json");
+                c.setDoOutput(true);c.setRequestProperty("Content-Type","application/json");\n                String gatewayToken=prefs.getString("verity_gateway_token","").trim();\n                if(!gatewayToken.isEmpty())c.setRequestProperty("Authorization","Bearer "+gatewayToken);
                 try(OutputStream os=c.getOutputStream()){os.write(body.toString().getBytes(StandardCharsets.UTF_8));}
                 int code=c.getResponseCode();if(code<200||code>=300)throw new IllegalStateException("Servidor respondeu HTTP "+code);
                 BufferedReader reader=new BufferedReader(new InputStreamReader(c.getInputStream(),StandardCharsets.UTF_8));
