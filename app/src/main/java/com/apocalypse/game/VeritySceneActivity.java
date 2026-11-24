@@ -117,7 +117,9 @@ public final class VeritySceneActivity extends Activity {
                 JSONObject body=new JSONObject();body.put("model","local-model");body.put("messages",history);
                 body.put("temperature",0.85);body.put("stream",false);
                 c=(HttpURLConnection)new URL(endpoint).openConnection();c.setRequestMethod("POST");c.setConnectTimeout(12000);c.setReadTimeout(45000);
-                c.setDoOutput(true);c.setRequestProperty("Content-Type","application/json");\n                String gatewayToken=prefs.getString("verity_gateway_token","").trim();\n                if(!gatewayToken.isEmpty())c.setRequestProperty("Authorization","Bearer "+gatewayToken);
+                c.setDoOutput(true);c.setRequestProperty("Content-Type","application/json");
+                String gatewayToken=prefs.getString("verity_gateway_token","").trim();
+                if(!gatewayToken.isEmpty())c.setRequestProperty("Authorization","Bearer "+gatewayToken);
                 try(OutputStream os=c.getOutputStream()){os.write(body.toString().getBytes(StandardCharsets.UTF_8));}
                 int code=c.getResponseCode();if(code<200||code>=300)throw new IllegalStateException("Servidor respondeu HTTP "+code);
                 BufferedReader reader=new BufferedReader(new InputStreamReader(c.getInputStream(),StandardCharsets.UTF_8));
