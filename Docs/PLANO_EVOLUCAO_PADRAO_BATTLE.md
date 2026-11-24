@@ -93,4 +93,4 @@ O APOCALYPSE deve adaptar os padrões adequados, sem copiar contas, loja, regras
 - Teste físico no Redmi 12: pendente.
 - Incremento enviado: folhagem, postes, pneus e silhuetas de sobrevivente/zumbis passaram a usar malhas orgânicas trianguladas, reduzindo o aspecto de blocos.
 - Colisão inicial enviada: edifícios registram volumes físicos AABB; movimento do jogador resolve os eixos separadamente e permite deslizar pelas fachadas. Ainda faltam colisões para vegetação, carros, cercas, destroços e interiores.
-- Próximos incrementos: completar colisões/navegação e avançar para modelos artísticos e materiais/texturas reais.
+- Próximos incrementos: pipeline de assets com UVs e texturas reais, materiais, chunks/streaming e expansão de interiores; depois colisões completas e otimização de memória.
