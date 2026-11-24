@@ -128,7 +128,7 @@ void draw(float dt){
     elapsed+=dt;
     glViewport(0,0,width,height);glClearColor(0.025f,0.045f,0.085f,1);glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     float p[16],v[16],pv[16];perspective(p,0.78f,(float)width/(float)height,0.1f,50.0f);
-    lookAt(v,{0,2.05f,5.3f},{0,1.0f,0},{0,1,0});multiply(pv,p,v);
+    lookAt(v,{0,2.05f,-5.3f},{0,1.0f,0},{0,1,0});multiply(pv,p,v);
     glUseProgram(program);glUniformMatrix4fv(mvpLoc,1,GL_FALSE,pv);glUniform1f(timeLoc,elapsed);
     glBindBuffer(GL_ARRAY_BUFFER,buffer);
     glEnableVertexAttribArray(0);glEnableVertexAttribArray(1);
