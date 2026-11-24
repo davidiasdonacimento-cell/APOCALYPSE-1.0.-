@@ -161,3 +161,10 @@ Antes de ampliar o projeto, a primeira prova técnica deverá compilar um aplica
 
 - Acesso ao estado de sobrevivência compartilhado entre render thread e callbacks JNI agora é protegido por mutex; isso evita concorrência nas compras e no HUD.
 - Shader PBR dos modelos importados teve a luz ambiente e a intensidade direta reduzidas para conter superexposição; a calibração final depende de GPU/tela reais.
+
+## Ondas e equipamentos — 24/11/2026
+- O módulo de sobrevivência controla número da onda, spawn limitado de inimigos em torno da posição atual do jogador, bônus de conclusão e recompensas de itens.
+- A loja nativa controla desbloqueio/munição/seleção de pulso, shuriken, rifle e escopeta; callbacks JNI são protegidos pelo mesmo mutex do estado de sobrevivência.
+- A loja Android foi convertida em painel rolável para caber em landscape com a quantidade ampliada de opções.
+- O ataque das armas é uma resolução arcade instantânea por alcance; renderização de projéteis e animações específicas continuam como próxima etapa.
+- Persistência entre partidas e teste em GPU/dispositivo permanecem pendentes.
