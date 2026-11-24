@@ -8,10 +8,10 @@
         android:theme="@android:style/Theme.Material.NoActionBar"
         android:usesCleartextTraffic="true">
         <activity android:name=".NativeGameActivity" android:screenOrientation="landscape" android:exported="false" />
-        <activity android:name=".VeritySceneActivity" android:exported="false" />
-        <activity android:name=".VerityLobbyActivity" android:screenOrientation="portrait" android:exported="false" />
-        <activity android:name=".Verity3DActivity" android:screenOrientation="portrait" android:exported="false" />
-        <activity android:name=".MainActivity" android:exported="true">
+        <activity android:name=".VeritySceneActivity" android:screenOrientation="landscape" android:exported="false" />
+        <activity android:name=".VerityLobbyActivity" android:screenOrientation="landscape" android:exported="false" />
+        <activity android:name=".Verity3DActivity" android:screenOrientation="landscape" android:exported="false" />
+        <activity android:name=".MainActivity" android:screenOrientation="landscape" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
