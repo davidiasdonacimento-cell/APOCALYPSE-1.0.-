@@ -138,7 +138,7 @@ public final class VerityLobbyActivity extends Activity {
         sub.topMargin = dp(12);
         content.addView(subtitle, sub);
 
-        TextView line = label("Verity: "Eu estava esperando você. Quer conversar um pouco antes de sair?"",
+        TextView line = label("Verity: \"Eu estava esperando você. Quer conversar um pouco antes de sair?\"",
                 16, Color.rgb(220, 230, 245), false);
         line.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2);
