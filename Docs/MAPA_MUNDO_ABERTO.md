@@ -97,3 +97,11 @@ A primeira entrega técnica será apenas a base espacial da metrópole: terreno,
 - O pipeline aceita mapas de textura declarados no material; quando ausentes, usa mapas compactos gerados em memória. Texturas fotográficas/artísticas de alta resolução ainda não foram entregues.
 - O hospital importado é um asset inicial de integração; os demais prédios, interiores e regiões continuam aguardando substituição gradual por modelos artísticos.
 - Teste visual no Android e validação de desempenho continuam pendentes.
+
+
+## Personagens volumétricos na exploração — 24/11/2026
+- Zumbis da Fase 3 renderizados como malhas 3D volumétricas compostas por partes anatômicas, sem billboard 2D.
+- VERITY renderizada como malha 3D independente, deslocada 1,72 unidade para o lado do jogador e com estado idle/walk.
+- Iluminação derivada de normais por fragmento dá volume às superfícies da VERITY.
+- Os modelos permanecem low-poly procedurais; a substituição por modelos artísticos rigados e texturas de personagem continua planejada.
+- Offset de acompanhamento da VERITY ainda não inclui pathfinding, colisão ou recuperação de obstáculos.
