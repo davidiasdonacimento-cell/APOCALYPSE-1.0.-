@@ -71,8 +71,8 @@ void detailedBuilding(float x,float z,float w,float d,float h,float r,float g,fl
         for(float wx=x+0.30f;wx<x+w-0.35f;wx+=0.78f){
             if(wx+0.42f>x+w-0.12f) break;
             facadeWindow(wx,wy,z-0.012f,0.42f,0.34f);
-            // Narrow sill below each window.
-            ground(wx,wy-0.055f,0.42f,0.035f,0.48f,0.49f,0.46f,wy);
+            // Narrow sill directly below each front-facing window.
+            facadeWindow(wx,wy-0.055f,z-0.014f,0.42f,0.045f,0.48f,0.49f,0.46f);
         }
     }
     // Entrance door on the street-facing side.
