@@ -2,7 +2,7 @@
 
 Jogo de sobrevivência zumbi para Android, com mundo explorável, combate, coleta de recursos, inventário, equipamentos e uma companheira de IA chamada VERITY.
 
-> **Estado real do projeto:** este repositório contém planejamento. Ainda não há implementação de gameplay, compilação validada ou APK.
+ > **Estado real do projeto:** há código Android/C++ de gameplay, sobrevivência, loja e ondas em desenvolvimento. Os incrementos mais recentes ainda precisam de compilação CI e teste físico; não tratar como APK validado.
 
 ## Direção técnica — corrigida
 
@@ -52,7 +52,8 @@ A experiência deve começar sempre em um lobby. A partida só começa quando o 
 - Mundo explorável com áreas e pontos de interesse.
 - Personagem controlável e câmera apropriada para a experiência.
 - Zumbis com percepção, navegação e comportamento de ameaça.
-- Sistema de combate, dano e vida.
+- Sistema de combate, dano, vida, ondas progressivas e recompensas por onda.
+- Loja de sessão com armas arcade (shuriken, rifle e escopeta), munições, cura e melhorias.
 - Armas e equipamentos integrados ao gameplay.
 - Coleta de recursos e itens.
 - VERITY integrada à navegação, percepção de ameaças e suporte ao jogador.
@@ -123,3 +124,11 @@ Um recurso só será considerado concluído quando estiver implementado, integra
 - Verity tem uma Activity separada de conversa/voz; não é uma personagem 3D animada.
 - Proximidade real, movimento até Verity, rig e animações 3D completas continuam pendentes conforme Docs/LOBBY_VERITY_INTERACOES.md.
 - Compilação Android, teste no aparelho e APK: ainda não validados/gerados.
+
+
+## Ondas e equipamentos — atualização 24/11/2026
+- Onda inicial com quatro zumbis; ao eliminar a onda, o sistema inicia outra com dificuldade/quantidade crescentes e limite de 12 inimigos ativos.
+- Bônus de conclusão: dinheiro escalonado, kit médico e shurikens de reserva.
+- Loja durante a partida com desbloqueio e seleção de shuriken, rifle e escopeta, além de recargas.
+- O combate das novas armas é arcade por alcance e seleção de alvo; ainda não há projéteis 3D visíveis nem animações finais.
+- Código enviado ao repositório; compilação e teste físico deste incremento permanecem pendentes.
