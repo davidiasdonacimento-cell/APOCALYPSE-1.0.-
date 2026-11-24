@@ -403,6 +403,7 @@ void buildSurvivalMesh(std::vector<Vertex>& mesh){
         // Zumbi humanoide 3D: pelvis, tronco, pescoço, cabeça, braços, pernas e calçados.
         // Todas as peças são malhas volumétricas trianguladas; nenhum billboard/PNG é usado.
         const float skinR=0.39f,skinG=0.46f,skinB=0.30f;
+        const float gait=sinf(z.patrolPhase*7.0f);
         ellipsoid(mesh,z.x,0.67f,z.z,0.22f,0.16f,0.17f,0.20f,0.25f,0.18f,10,14);
         ellipsoid(mesh,z.x,0.98f,z.z,0.29f,0.31f,0.19f,0.23f,0.31f,0.22f,12,16);
         ellipsoid(mesh,z.x,1.27f,z.z-0.015f,0.105f,0.12f,0.11f,skinR*0.82f,skinG*0.82f,skinB*0.82f,8,12);
@@ -410,15 +411,15 @@ void buildSurvivalMesh(std::vector<Vertex>& mesh){
         // Ombros caídos, braços em duas secções e mãos.
         ellipsoid(mesh,z.x-0.30f,1.10f,z.z,0.145f,0.15f,0.15f,0.25f,0.33f,0.22f,9,12);
         ellipsoid(mesh,z.x+0.30f,1.10f,z.z,0.145f,0.15f,0.15f,0.25f,0.33f,0.22f,9,12);
-        ellipsoid(mesh,z.x-0.39f,0.88f,z.z-0.015f,0.105f,0.24f,0.105f,skinR,skinG,skinB,9,12);
-        ellipsoid(mesh,z.x+0.39f,0.88f,z.z+0.025f,0.105f,0.24f,0.105f,skinR,skinG,skinB,9,12);
+        ellipsoid(mesh,z.x-0.39f,0.88f+gait*0.065f,z.z-0.015f,0.105f,0.24f,0.105f,skinR,skinG,skinB,9,12);
+        ellipsoid(mesh,z.x+0.39f,0.88f-gait*0.065f,z.z+0.025f,0.105f,0.24f,0.105f,skinR,skinG,skinB,9,12);
         ellipsoid(mesh,z.x-0.42f,0.64f,z.z-0.035f,0.09f,0.105f,0.09f,skinR*0.85f,skinG*0.85f,skinB*0.85f,8,10);
         ellipsoid(mesh,z.x+0.42f,0.64f,z.z+0.005f,0.09f,0.105f,0.09f,skinR*0.85f,skinG*0.85f,skinB*0.85f,8,10);
         // Calças rasgadas, joelhos, canelas e botas separados.
-        ellipsoid(mesh,z.x-0.12f,0.39f,z.z,0.115f,0.28f,0.12f,0.12f,0.16f,0.14f,10,12);
-        ellipsoid(mesh,z.x+0.12f,0.39f,z.z,0.115f,0.28f,0.12f,0.12f,0.16f,0.14f,10,12);
-        ellipsoid(mesh,z.x-0.12f,0.12f,z.z-0.055f,0.14f,0.085f,0.20f,0.075f,0.085f,0.075f,8,12);
-        ellipsoid(mesh,z.x+0.12f,0.12f,z.z-0.055f,0.14f,0.085f,0.20f,0.075f,0.085f,0.075f,8,12);
+        ellipsoid(mesh,z.x-0.12f,0.39f+gait*0.085f,z.z,0.115f,0.28f,0.12f,0.12f,0.16f,0.14f,10,12);
+        ellipsoid(mesh,z.x+0.12f,0.39f-gait*0.085f,z.z,0.115f,0.28f,0.12f,0.12f,0.16f,0.14f,10,12);
+        ellipsoid(mesh,z.x-0.12f,0.12f+gait*0.085f,z.z-0.055f,0.14f,0.085f,0.20f,0.075f,0.085f,0.075f,8,12);
+        ellipsoid(mesh,z.x+0.12f,0.12f-gait*0.085f,z.z-0.055f,0.14f,0.085f,0.20f,0.075f,0.085f,0.075f,8,12);
         // Costuras/rasgos do casaco, olhos e boca dão leitura facial à distância.
         ellipsoid(mesh,z.x,1.00f,z.z-0.178f,0.045f,0.23f,0.018f,0.12f,0.18f,0.13f,8,10);
         ellipsoid(mesh,z.x-0.072f,1.49f,z.z-0.176f,0.026f,0.018f,0.012f,0.12f,0.035f,0.025f,6,8);
