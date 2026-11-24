@@ -91,4 +91,6 @@ O APOCALYPSE deve adaptar os padrões adequados, sem copiar contas, loja, regras
 - Ainda pendentes: modelos 3D artísticos, texturas de cenário, interiores realmente acessíveis, colisão de edifícios, chunks e validação de desempenho.
 - Build CI após a expansão: aguardando resultado.
 - Teste físico no Redmi 12: pendente.
-- Incremento enviado: folhagem, postes, pneus e silhuetas de sobrevivente/zumbis passaram a usar malhas orgânicas trianguladas, reduzindo o aspecto de blocos. Próximo: modelos artísticos e materiais/texturas reais, depois colisões e navegação.
+- Incremento enviado: folhagem, postes, pneus e silhuetas de sobrevivente/zumbis passaram a usar malhas orgânicas trianguladas, reduzindo o aspecto de blocos.
+- Colisão inicial enviada: edifícios registram volumes físicos AABB; movimento do jogador resolve os eixos separadamente e permite deslizar pelas fachadas. Ainda faltam colisões para vegetação, carros, cercas, destroços e interiores.
+- Próximos incrementos: completar colisões/navegação e avançar para modelos artísticos e materiais/texturas reais.
