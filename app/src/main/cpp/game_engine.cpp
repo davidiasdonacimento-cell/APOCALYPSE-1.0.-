@@ -7,6 +7,7 @@
 #include <cmath>
 #include <time.h>
 #include <cstdio>
+#include <mutex>
 #include "survival_system.h"
 #include "math3d.h"
 #include "verity_companion.h"
@@ -28,6 +29,7 @@ std::vector<Vertex> world, playerMesh;
 struct WorldCollider { float minX, maxX, minZ, maxZ; };
 std::vector<WorldCollider> worldColliders;
 apocalypse::SurvivalSystem survival;
+std::mutex survivalMutex;
 apocalypse::assets::ModelRenderer importedModels;
 
 Vertex v(float x,float y,float z,float r,float g,float b){return {x,y,z,r,g,b,0,0,3};}
@@ -457,7 +459,7 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeInit(JNIEn
     GLint linked=GL_FALSE;glGetProgramiv(program,GL_LINK_STATUS,&linked);
     if(linked!=GL_TRUE){char log[1024]={};glGetProgramInfoLog(program,sizeof(log),nullptr,log);LOGE("Program link: %s",log);glDeleteProgram(program);program=0;return;}
     buildCity();
-    survival.reset();
+    { std::lock_guard<std::mutex> lock(survivalMutex); survival.reset(); }
     if(!importedModels.initialize(AAssetManager_fromJava(env,javaAssets))) LOGE("Falha ao inicializar modelos OBJ/PBR");
     apocalypse::initializeVerityCompanion();
     // Three small tileable starter material maps generated in memory: no unused APK files.
@@ -508,7 +510,7 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
         const float step=(3.2f*dt)/length;
         movePlayerWithCollision(moveX*step,moveZ*step);
     }
-    survival.update(dt,playerX,playerZ);
+    { std::lock_guard<std::mutex> lock(survivalMutex); survival.update(dt,playerX,playerZ); }
     const bool playerMoving=length>0.01f;
     if(playerMoving||playerWasMoving){
         addPlayerModel(playerMoving?(float)now*8.0f:0.0f);
@@ -540,7 +542,7 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     for(int i=0;i<3;i++){glActiveTexture(GL_TEXTURE0+i);glBindTexture(GL_TEXTURE_2D,surfaceTextures[i]);glUniform1i(glGetUniformLocation(program,texNames[i]),i);}
     glEnableVertexAttribArray(0);glEnableVertexAttribArray(1);glEnableVertexAttribArray(2);glEnableVertexAttribArray(3);
     std::vector<Vertex> dynamicMesh;
-    buildSurvivalMesh(dynamicMesh);
+    { std::lock_guard<std::mutex> lock(survivalMutex); buildSurvivalMesh(dynamicMesh); }
     if(!dynamicMesh.empty()){
         if(!survivalBuffer) glGenBuffers(1,&survivalBuffer);
         glUniformMatrix4fv(mvpLocation,1,GL_FALSE,viewProjection.m);
@@ -566,15 +568,18 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
 }
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeAttack(JNIEnv*,jclass){
+    std::lock_guard<std::mutex> lock(survivalMutex);
     return survival.usePulse(playerX,playerZ)?JNI_TRUE:JNI_FALSE;
 }
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativePurchase(JNIEnv*,jclass,jint item){
+    std::lock_guard<std::mutex> lock(survivalMutex);
     return survival.purchase((int)item)?JNI_TRUE:JNI_FALSE;
 }
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeGetHud(JNIEnv* env,jclass){
     char text[180];
+    std::lock_guard<std::mutex> lock(survivalMutex);
     std::snprintf(text,sizeof(text),"VIDA %d/100   ZUMBIS %d   $ %d\nAGUA %d  COMIDA %d  MATERIAIS %d  KITS %d",
         survival.health(),survival.aliveZombies(),survival.money(),survival.water(),survival.food(),survival.materials(),survival.medkits());
     return env->NewStringUTF(text);
