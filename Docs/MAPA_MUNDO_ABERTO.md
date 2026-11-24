@@ -63,3 +63,11 @@ A primeira entrega técnica será apenas a base espacial da metrópole: terreno,
 - Essas malhas continuam sendo geometria procedural estilizada; não equivalem a personagens escaneados, modelos artísticos externos ou materiais PBR.
 - Ainda não há modelos artísticos externos, texturas PBR, interiores exploráveis, colisão do cenário ou chunks; o mapa continua sendo uma área procedural em evolução.
 - Renderização após a nova expansão, compilação CI e teste no Android: pendentes.
+
+
+## Colisão do primeiro distrito — 24/11/2026
+- As construções criadas pela função de edifícios registram volumes físicos AABB separados da malha visual.
+- O personagem testa colisão circular contra esses volumes e resolve movimento nos eixos X/Z separadamente, permitindo deslizar ao longo das fachadas.
+- Os limites externos continuam ativos.
+- Esta etapa cobre edifícios registrados pelo gerador; ainda não representa colisão completa de carros, árvores, cercas, destroços ou interiores.
+- Compilação e teste físico no Android ainda precisam ser confirmados.
