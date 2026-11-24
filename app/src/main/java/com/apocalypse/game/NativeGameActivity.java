@@ -72,8 +72,7 @@ public final class NativeGameActivity extends Activity {
         frame.addView(surface, new FrameLayout.LayoutParams(-1, -1));
 
         TextView overlay = new TextView(this);
-        overlay.setText("APOCALYPSE • EXPLORAÇÃO
-Joystick: mover personagem");
+        overlay.setText("APOCALYPSE • EXPLORAÇÃO\nJoystick: mover personagem");
         overlay.setTextColor(Color.WHITE);
         overlay.setTextSize(13);
         overlay.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
@@ -136,8 +135,7 @@ Joystick: mover personagem");
         frame.addView(shopScroll,shopPanelParams);
 
         TextView shopTitle = new TextView(this);
-        shopTitle.setText("LOJA DE SOBREVIVÊNCIA
-Limpe a onda para ganhar bônus de dinheiro e itens!");
+        shopTitle.setText("LOJA DE SOBREVIVÊNCIA\nLimpe a onda para ganhar bônus de dinheiro e itens!");
         shopTitle.setTextColor(Color.WHITE);
         shopTitle.setTextSize(14);
         shopTitle.setPadding(4,4,4,8);
