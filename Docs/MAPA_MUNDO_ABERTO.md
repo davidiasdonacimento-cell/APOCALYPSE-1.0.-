@@ -82,3 +82,10 @@ A primeira entrega técnica será apenas a base espacial da metrópole: terreno,
 - Os limites externos continuam ativos.
 - Esta etapa cobre edifícios registrados pelo gerador; ainda não representa colisão completa de carros, árvores, cercas, destroços ou interiores.
 - Compilação e teste físico no Android ainda precisam ser confirmados.
+
+
+## Materiais UV — 24/11/2026
+- O terreno e superfícies planas passaram a transportar UVs e IDs de material para o shader.
+- Materiais iniciais: vegetação, concreto e asfalto, com repetição controlada por escala espacial e mipmaps.
+- Texturas iniciais são padrões procedurais 64 × 64 gerados em memória; não representam ainda materiais fotográficos de alta resolução.
+- Modelos externos com UVs, texturas artísticas reais e materiais PBR continuam pendentes.
