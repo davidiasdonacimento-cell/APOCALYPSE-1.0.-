@@ -19,8 +19,8 @@ O APOCALYPSE deve adaptar os padrões adequados, sem copiar contas, loja, regras
 ## Auditoria honesta do APOCALYPSE
 
 - O renderer de gameplay atual usa projeção isométrica simplificada, geometria procedural e cores por vértice.
-- A cidade atual é um blockout; não possui materiais PBR, modelos artísticos, colisões completas ou carregamento por chunks.
-- O personagem jogável é composto por blocos e ainda não possui controle completo de orientação e animação.
+- A cidade ainda usa geometria procedural estilizada; não possui materiais PBR, modelos artísticos externos, colisões completas ou carregamento por chunks.
+- O personagem jogável recebeu volumes orgânicos elipsoidais/cilíndricos para substituir a silhueta inteiramente cúbica; ainda não possui malha artística com rig esquelético nem animação de locomoção completa.
 - Os controles atuais são um joystick e um botão de pulso; ainda não têm câmera independente e multitouch completo.
 - A cena da Verity usa geometria procedural low-poly. A caminhada é demonstrativa no lugar; não existe skinning por pesos nem sincronização labial por fonemas.
 - A sobrevivência está integrada ao código, mas ainda não passou por compilação e teste físico documentados.
@@ -91,4 +91,4 @@ O APOCALYPSE deve adaptar os padrões adequados, sem copiar contas, loja, regras
 - Ainda pendentes: modelos 3D artísticos, texturas de cenário, interiores realmente acessíveis, colisão de edifícios, chunks e validação de desempenho.
 - Build CI após a expansão: aguardando resultado.
 - Teste físico no Redmi 12: pendente.
-- Próximo incremento: colisões e navegação do distrito; depois adicionar um conjunto de texturas reais e modelos otimizados.
+- Incremento enviado: folhagem, postes, pneus e silhuetas de sobrevivente/zumbis passaram a usar malhas orgânicas trianguladas, reduzindo o aspecto de blocos. Próximo: modelos artísticos e materiais/texturas reais, depois colisões e navegação.
