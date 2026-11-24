@@ -52,6 +52,17 @@ Construir um mundo aberto de sobrevivência zumbi para Android, dividido em regi
 
 A primeira entrega técnica será apenas a base espacial da metrópole: terreno, ruas principais, limites e pontos de referência. Não será declarada como mapa jogável até existir renderização integrada, colisão e teste no Android.
 
+## Incremento de expansão territorial — 24/11/2026
+- Terreno procedural ampliado para uma área de aproximadamente 224 × 224 unidades, com malha de 144 × 144 células.
+- Quatro regiões agora possuem geometria procedural conectada por corredores viários: metrópole, floresta contaminada, zona militar e povoado rural.
+- Floresta: árvores orgânicas distribuídas, clareiras e posto florestal.
+- Zona militar: hangar, alojamentos, perímetro com postes de cerca e torre de observação.
+- Região rural: casas, anexos, árvores, fileiras de cultivo e canal de água.
+- Foi adicionada uma clínica térrea com entrada física aberta, piso e divisórias/mobiliário internos. É o primeiro interior acessível previsto para teste.
+- Limites de movimento e distância de projeção foram ampliados para permitir alcançar as novas regiões.
+- Todo esse conteúdo ainda é geometria procedural com cores por vértice; não são modelos artísticos externos nem texturas reais de alta resolução.
+- Chunks, streaming de regiões, materiais/texturas PBR, colisões de vegetação/objetos e teste físico no Android continuam pendentes.
+
 ## Estado
 
 - Planejamento das quatro regiões: documentado.
