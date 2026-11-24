@@ -23,6 +23,7 @@ GLint vertexCount=0, playerVertexCount=0;
 int surfaceWidth=1, surfaceHeight=1;
 float playerX=0.0f, playerZ=0.0f, moveX=0.0f, moveZ=0.0f;
 bool playerWasMoving=false;
+float facingX=0.0f, facingZ=-1.0f;
 std::vector<Vertex> world, playerMesh;
 struct WorldCollider { float minX, maxX, minZ, maxZ; };
 std::vector<WorldCollider> worldColliders;
@@ -448,7 +449,7 @@ GLuint compileShader(GLenum type,const char* src){
 extern "C" JNIEXPORT void JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeInit(JNIEnv* env,jclass,jobject javaAssets){
     const char* vs="#version 300 es\nlayout(location=0) in vec3 aPos; layout(location=1) in vec3 aColor; layout(location=2) in vec2 aUV; layout(location=3) in float aMaterial; uniform mat4 uMVP; out vec3 color; out vec3 worldPosition; out vec2 uv; flat out int materialId; void main(){worldPosition=aPos;gl_Position=uMVP*vec4(aPos,1.0);color=aColor;uv=aUV;materialId=int(aMaterial+0.5);}";
-    const char* fs="#version 300 es\nprecision mediump float;in vec3 color;in vec3 worldPosition;in vec2 uv;flat in int materialId;uniform sampler2D uGrass;uniform sampler2D uConcrete;uniform sampler2D uAsphalt;out vec4 fragColor;void main(){vec3 texel=vec3(1.0);if(materialId==0)texel=texture(uGrass,uv).rgb;else if(materialId==1)texel=texture(uConcrete,uv).rgb;else if(materialId==2)texel=texture(uAsphalt,uv).rgb;vec3 normal=normalize(cross(dFdx(worldPosition),dFdy(worldPosition)));vec3 lightDir=normalize(vec3(-0.35,0.82,0.44));float diffuse=0.25+0.48*abs(dot(normal,lightDir));float distanceFog=clamp((gl_FragCoord.z-0.90)*2.8,0.0,0.20);vec3 lit=color*texel*diffuse*0.88;vec3 fog=vec3(0.10,0.14,0.16);fragColor=vec4(mix(lit,fog,distanceFog),1.0);}";
+    const char* fs="#version 300 es\nprecision mediump float;in vec3 color;in vec3 worldPosition;in vec2 uv;flat in int materialId;uniform sampler2D uGrass;uniform sampler2D uConcrete;uniform sampler2D uAsphalt;out vec4 fragColor;void main(){vec3 texel=vec3(1.0);if(materialId==0)texel=texture(uGrass,uv).rgb;else if(materialId==1)texel=texture(uConcrete,uv).rgb;else if(materialId==2)texel=texture(uAsphalt,uv).rgb;vec3 normal=normalize(cross(dFdx(worldPosition),dFdy(worldPosition)));vec3 lightDir=normalize(vec3(-0.35,0.82,0.44));float diffuse=0.14+0.34*max(dot(normal,lightDir),0.0);float distanceFog=clamp((gl_FragCoord.z-0.90)*2.8,0.0,0.20);vec3 lit=color*texel*diffuse*0.82;vec3 fog=vec3(0.10,0.14,0.16);fragColor=vec4(mix(lit,fog,distanceFog),1.0);}";
     GLuint a=compileShader(GL_VERTEX_SHADER,vs),b=compileShader(GL_FRAGMENT_SHADER,fs);
     if(!a||!b)return;
     program=glCreateProgram();glAttachShader(program,a);glAttachShader(program,b);glLinkProgram(program);
@@ -503,6 +504,7 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     if(dt>0.05f)dt=0.05f;
     float length=sqrtf(moveX*moveX+moveZ*moveZ);
     if(length>0.01f){
+        facingX=moveX/length; facingZ=moveZ/length;
         const float step=(3.2f*dt)/length;
         movePlayerWithCollision(moveX*step,moveZ*step);
     }
@@ -520,8 +522,8 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     for(int i=0;i<3;i++){glActiveTexture(GL_TEXTURE0+i);glBindTexture(GL_TEXTURE_2D,surfaceTextures[i]);glUniform1i(glGetUniformLocation(program,texNames[i]),i);}
     const float aspect=(float)surfaceWidth/(float)surfaceHeight;
     const apocalypse::Mat4 projection=apocalypse::perspective(58.0f*3.14159265f/180.0f,aspect,0.10f,240.0f);
-    const apocalypse::Vec3 eye{playerX+0.72f,2.85f,playerZ+4.65f};
-    const apocalypse::Vec3 target{playerX,1.02f,playerZ-0.72f};
+    const apocalypse::Vec3 eye{playerX-facingX*4.65f+facingX*0.72f,2.85f,playerZ-facingZ*4.65f+facingZ*0.72f};
+    const apocalypse::Vec3 target{playerX+facingX*0.72f,1.02f,playerZ+facingZ*0.72f};
     const apocalypse::Mat4 view=apocalypse::lookAt(eye,target,{0.0f,1.0f,0.0f});
     const apocalypse::Mat4 viewProjection=apocalypse::multiply(projection,view);
     const GLint mvpLocation=glGetUniformLocation(program,"uMVP");
@@ -566,10 +568,14 @@ extern "C" JNIEXPORT jboolean JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeAttack(JNIEnv*,jclass){
     return survival.usePulse(playerX,playerZ)?JNI_TRUE:JNI_FALSE;
 }
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativePurchase(JNIEnv*,jclass,jint item){
+    return survival.purchase((int)item)?JNI_TRUE:JNI_FALSE;
+}
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeGetHud(JNIEnv* env,jclass){
     char text[180];
-    std::snprintf(text,sizeof(text),"VIDA %d/100   ZUMBIS %d\nAGUA %d  COMIDA %d  MATERIAIS %d  KITS %d",
-        survival.health(),survival.aliveZombies(),survival.water(),survival.food(),survival.materials(),survival.medkits());
+    std::snprintf(text,sizeof(text),"VIDA %d/100   ZUMBIS %d   $ %d\nAGUA %d  COMIDA %d  MATERIAIS %d  KITS %d",
+        survival.health(),survival.aliveZombies(),survival.money(),survival.water(),survival.food(),survival.materials(),survival.medkits());
     return env->NewStringUTF(text);
 }
