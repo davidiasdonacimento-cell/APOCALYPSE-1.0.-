@@ -58,6 +58,8 @@ A primeira entrega técnica será apenas a base espacial da metrópole: terreno,
 - Conexões entre regiões: documentadas.
 - Sistema de chunks: especificado, ainda não implementado.
 - Terreno 3D e blockout urbano: presentes no renderer nativo.
-- Primeiro distrito recebeu fachadas com janelas/portas, variação de edifícios, anexo hospitalar, caminhos e árvores do parque, postes, carros abandonados, marcações viárias, entulho e cercas procedurais.
-- Ainda não há modelos artísticos externos, texturas PBR, interiores exploráveis, colisão do cenário ou chunks; o mapa continua sendo uma área procedural de primeira etapa.
+- Primeiro distrito recebeu fachadas com janelas/portas, variação de edifícios, anexo hospitalar, caminhos, postes, carros abandonados, marcações viárias, entulho e cercas procedurais.
+- Incremento orgânico: árvores com troncos cônicos e copas elipsoidais trianguladas; luminárias com postes cilíndricos e globos; pneus arredondados; sobrevivente e zumbis com volumes elipsoidais em vez de corpos inteiros em blocos.
+- Essas malhas continuam sendo geometria procedural estilizada; não equivalem a personagens escaneados, modelos artísticos externos ou materiais PBR.
+- Ainda não há modelos artísticos externos, texturas PBR, interiores exploráveis, colisão do cenário ou chunks; o mapa continua sendo uma área procedural em evolução.
 - Renderização após a nova expansão, compilação CI e teste no Android: pendentes.
