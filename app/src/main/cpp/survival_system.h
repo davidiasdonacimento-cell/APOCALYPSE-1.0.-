@@ -20,7 +20,11 @@ public:
     void update(float dt, float playerX, float playerZ);
     bool usePulse(float playerX, float playerZ);
     bool purchase(int item);
+    bool selectWeapon(int weapon);
     int money() const { return moneyCount; }
+    int wave() const { return waveNumber; }
+    int weapon() const { return activeWeapon; }
+    int weaponAmmo() const;
     int health() const { return playerHealth; }
     int water() const { return waterCount; }
     int food() const { return foodCount; }
@@ -34,6 +38,11 @@ private:
     int moneyCount=0;
     int pulseDamage=1;
     int armorLevel=0;
+    int waveNumber=1;
+    int activeWeapon=0; // 0 pulse, 1 shuriken, 2 rifle, 3 shotgun
+    bool weaponOwned[4]={true,false,false,false};
+    int shurikenAmmo=0, rifleAmmo=0, shotgunAmmo=0;
+    void spawnWave();
     int waterCount=0, foodCount=0, materialCount=0, medkitCount=0;
     float pulseCooldown=0.0f;
     std::vector<Zombie> zombieList;
