@@ -166,5 +166,14 @@ Antes de ampliar o projeto, a primeira prova técnica deverá compilar um aplica
 - O módulo de sobrevivência controla número da onda, spawn limitado de inimigos em torno da posição atual do jogador, bônus de conclusão e recompensas de itens.
 - A loja nativa controla desbloqueio/munição/seleção de pulso, shuriken, rifle e escopeta; callbacks JNI são protegidos pelo mesmo mutex do estado de sobrevivência.
 - A loja Android foi convertida em painel rolável para caber em landscape com a quantidade ampliada de opções.
-- O ataque das armas é uma resolução arcade instantânea por alcance; renderização de projéteis e animações específicas continuam como próxima etapa.
+- O disparo agora usa a direção de avanço, cooldown e munição: shuriken/rifle/escopeta criam projéteis arcade com atualização temporal e colisão por segmento; o pulso usa uma verificação frontal imediata.
+- O renderer gera modelos procedurais 3D para o equipamento selecionado e os desenha junto ao sobrevivente; projéteis e flashes de impacto são malhas volumétricas temporárias. Há recuo visual simplificado.
 - Persistência entre partidas e teste em GPU/dispositivo permanecem pendentes.
+
+
+## Sistemas de armas e disparo — 24/11/2026
+- `SurvivalSystem` mantém o inventário de munição e cria projéteis temporários para shuriken, rifle e escopeta; o movimento é atualizado por delta time e a colisão é resolvida pela distância do zumbi ao segmento percorrido.
+- A escopeta usa cinco pellets de jogo com dispersão simplificada; rifle e shuriken usam um projétil visual cada. O pulso segue uma verificação frontal imediata.
+- `game_engine.cpp` constrói malhas procedurais distintas para pulso, shuriken, rifle e escopeta, orienta-as pela direção do personagem e aplica recuo visual breve.
+- Impactos criam flashes volumétricos temporários. Os modelos não dependem de imagens ou downloads externos.
+- Limitações: sem mira independente, animação esquelética de braços/mãos, recarga animada, áudio ou colisão dos projéteis contra edifícios; o comportamento é arcade fictício, não balística real. Build CI e validação no Redmi 12 ainda são necessários.
