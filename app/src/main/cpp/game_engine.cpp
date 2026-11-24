@@ -19,6 +19,8 @@ GLint vertexCount=0, playerVertexCount=0;
 int surfaceWidth=1, surfaceHeight=1;
 float playerX=0.0f, playerZ=0.0f, moveX=0.0f, moveZ=0.0f;
 std::vector<Vertex> world, playerMesh;
+struct WorldCollider { float minX, maxX, minZ, maxZ; };
+std::vector<WorldCollider> worldColliders;
 apocalypse::SurvivalSystem survival;
 
 Vertex v(float x,float y,float z,float r,float g,float b){return {x,y,z,r,g,b};}
@@ -96,6 +98,8 @@ void sidewalkV(float x,float z,float w,float d){
 }
 void building(float x,float z,float w,float d,float h,float r,float g,float b){
     float x2=x+w,z2=z+d,y=0.12f;
+    // A colisão usa o volume físico da construção, independente da malha visual.
+    worldColliders.push_back({x-0.12f,x+w+0.12f,z-0.12f,z+d+0.12f});
     Vertex a=v(x,y,z,r*.52f,g*.52f,b*.52f), b0=v(x2,y,z,r*.58f,g*.58f,b*.58f);
     Vertex c=v(x2,y,z2,r*.48f,g*.48f,b*.48f), d0=v(x,y,z2,r*.50f,g*.50f,b*.50f);
     Vertex A=v(x,y+h,z,r,g,b), B=v(x2,y+h,z,r*.92f,g*.92f,b*.92f);
@@ -197,6 +201,7 @@ void addPlots(){
 }
 void buildCity(){
     world.clear();
+    worldColliders.clear();
     addTerrain();
     // Asphalt roads above terrain to avoid z-fighting.
     ground(-24,-2.2f,48,4.4f,0.105f,0.115f,0.13f,0.13f);
@@ -239,6 +244,23 @@ void buildCity(){
     addResidentialDetails();
 }
 
+bool collidesWithWorld(float x,float z){
+    constexpr float radius=0.34f;
+    for(const auto& box:worldColliders){
+        const float nearestX=fmaxf(box.minX,fminf(x,box.maxX));
+        const float nearestZ=fmaxf(box.minZ,fminf(z,box.maxZ));
+        const float dx=x-nearestX,dz=z-nearestZ;
+        if(dx*dx+dz*dz<radius*radius) return true;
+    }
+    return false;
+}
+void movePlayerWithCollision(float dx,float dz){
+    // Resolve os eixos separadamente para permitir deslizar pelas paredes.
+    const float nextX=fmaxf(-28.0f,fminf(28.0f,playerX+dx));
+    if(!collidesWithWorld(nextX,playerZ)) playerX=nextX;
+    const float nextZ=fmaxf(-28.0f,fminf(28.0f,playerZ+dz));
+    if(!collidesWithWorld(playerX,nextZ)) playerZ=nextZ;
+}
 void addPlayerModel(){
     playerMesh.clear();
     // Silhueta humana arredondada: botas, pernas, tronco, braços e cabeça.
@@ -325,9 +347,10 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     float dt=lastTime>0.0?(float)(now-lastTime):0.016f;lastTime=now;
     if(dt>0.05f)dt=0.05f;
     float length=sqrtf(moveX*moveX+moveZ*moveZ);
-    if(length>0.01f){playerX+=(moveX/length)*3.2f*dt;playerZ+=(moveZ/length)*3.2f*dt;}
-    if(playerX < -28.0f)playerX=-28.0f;if(playerX>28.0f)playerX=28.0f;
-    if(playerZ < -28.0f)playerZ=-28.0f;if(playerZ>28.0f)playerZ=28.0f;
+    if(length>0.01f){
+        const float step=(3.2f*dt)/length;
+        movePlayerWithCollision(moveX*step,moveZ*step);
+    }
     survival.update(dt,playerX,playerZ);
     glUseProgram(program);
     const float aspect=(float)surfaceWidth/(float)surfaceHeight;
