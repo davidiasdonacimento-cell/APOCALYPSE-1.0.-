@@ -45,7 +45,9 @@ void loadMtl(AAssetManager* assets,const std::string& path,std::unordered_map<st
         else if(tag=="Pm")row>>m->metallic;
         else if(tag=="map_Kd"){std::string f;row>>f;m->albedoPath=f;}
         else if(tag=="map_Bump"||tag=="bump"||tag=="norm"){std::string f;row>>f;m->normalPath=f;}
-        else if(tag=="map_Pr"||tag=="map_Pm"||tag=="map_RMA"){std::string f;row>>f;m->metallicRoughnessPath=f;}
+        else if(tag=="map_Pr"){std::string f;row>>f;m->roughnessPath=f;}
+        else if(tag=="map_Pm"){std::string f;row>>f;m->metallicPath=f;}
+        else if(tag=="map_RMA"){std::string f;row>>f;m->metallicRoughnessPath=f;}
     }
 }
 bool unpackAttribute(cgltf_accessor* accessor,size_t components,std::vector<float>& out){
