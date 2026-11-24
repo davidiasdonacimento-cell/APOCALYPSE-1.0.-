@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+#include <algorithm>
 
 namespace apocalypse {
 struct Vec3 { float x, y, z; };
