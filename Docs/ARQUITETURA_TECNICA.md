@@ -85,6 +85,8 @@ Antes de ampliar o projeto, a primeira prova técnica deverá compilar um aplica
 
 - Base tecnológica do BATTLE: **inspecionada nos arquivos listados**.
 - Reutilização de código: **ainda não realizada**.
-- Projeto Android APOCALYPSE: **ainda não implementado**.
+- Projeto Android APOCALYPSE: **estrutura e código inicial presentes** (lobby de menu, Activity de Verity e cena nativa).
 - Compilação local no Android: **pendente de prova**.
+- Sistemas de sobrevivência da Fase 3: **código implementado e integrado; compilação/teste pendentes**.
+- Lobby 3D com Verity e interações animadas: **pendente**.
 - APK: **não gerado**.
