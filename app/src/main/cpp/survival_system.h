@@ -25,7 +25,8 @@ class SurvivalSystem {
 public:
     void reset();
     void update(float dt, float playerX, float playerZ);
-    bool usePulse(float playerX, float playerZ);\n    bool fireWeapon(float playerX, float playerZ, float dirX, float dirZ);
+    bool usePulse(float playerX, float playerZ);
+    bool fireWeapon(float playerX, float playerZ, float dirX, float dirZ);
     bool purchase(int item);
     bool selectWeapon(int weapon);
     int money() const { return moneyCount; }
@@ -39,7 +40,8 @@ public:
     int medkits() const { return medkitCount; }
     int aliveZombies() const;
     const std::vector<Zombie>& zombies() const { return zombieList; }
-    const std::vector<Pickup>& pickups() const { return pickupList; }\n    const std::vector<Projectile>& projectiles() const { return projectileList; }
+    const std::vector<Pickup>& pickups() const { return pickupList; }
+    const std::vector<Projectile>& projectiles() const { return projectileList; }
     const std::vector<Impact>& impacts() const { return impactList; }
 private:
     int playerHealth=100;
@@ -55,7 +57,8 @@ private:
     int waterCount=0, foodCount=0, materialCount=0, medkitCount=0;
     float pulseCooldown=0.0f;
     std::vector<Zombie> zombieList;
-    std::vector<Pickup> pickupList;\n    std::vector<Projectile> projectileList;
+    std::vector<Pickup> pickupList;
+    std::vector<Projectile> projectileList;
     std::vector<Impact> impactList;
 };
 }
