@@ -150,3 +150,11 @@ Antes de ampliar o projeto, a primeira prova técnica deverá compilar um aplica
 - O modelo 3D do jogador agora atualiza a malha durante o movimento e desloca alternadamente pernas, botas e braços para formar um ciclo simples de caminhada.
 - Ao parar, a malha retorna à pose neutra. A atualização do buffer acontece somente durante o movimento e na transição para parado.
 - Isso é animação procedural de peças volumétricas, não skinning por pesos de vértices nem animação mocap; rig esquelético completo permanece pendente.
+
+
+## Economia, câmera e iluminação — 24/11/2026
+- A Fase 3 recebeu saldo de sessão e recompensa de $30 por zumbi derrotado, com validação nativa de compras.
+- Loja da partida: cura imediata, melhoria de dano do pulso e colete com redução de dano; saldo e níveis ainda não persistem após fechar a partida.
+- A câmera de terceira pessoa acompanha a direção recente do joystick para manter o cenário à frente do deslocamento no enquadramento.
+- A luz difusa principal do shader do cenário foi reduzida; materiais PBR importados e shaders de personagens ainda exigem calibração visual individual.
+- Nenhuma dessas alterações foi validada visualmente no Redmi 12 nesta etapa.
