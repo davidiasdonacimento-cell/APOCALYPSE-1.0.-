@@ -1,6 +1,6 @@
 # Lobby 3D — VERITY
 
-**Status:** personagem 3D procedural com rig articulado por juntas e animações de demonstração implementados no código. Compilação e validação Android ainda pendentes.
+**Status:** cena 3D procedural mínima presente no código; ainda não equivale a um lobby completo. O primeiro APK foi compilado, mas a experiência visual e o funcionamento no aparelho não foram validados.
 
 ## Fluxo
 1. INICIAR JOGO abre a cena 3D da Verity.
@@ -46,3 +46,11 @@
 3. Executar no Redmi 12 e conferir enquadramento, juntas, animações e consumo.
 4. Verificar retorno da conversa e início da partida.
 5. Só então marcar a implementação como validada.
+
+
+## Correção de orientação e avaliação do primeiro APK
+- O primeiro APK de CI tinha aproximadamente 695 KB e continha apenas código Android e bibliotecas nativas; não inclui modelos 3D artísticos, texturas ou cenário de lobby detalhado.
+- Foi corrigido o manifesto para abrir MainActivity, Verity3DActivity, VerityLobbyActivity, VeritySceneActivity e NativeGameActivity em orientação landscape.
+- Isso corrige a orientação solicitada, mas não prova que o lobby 3D esteja funcional ou visualmente completo.
+- Próximas tarefas obrigatórias: construir cenário 3D de lobby com piso, iluminação, pontos de câmera e elementos de ambiente; ajustar enquadramento da personagem em landscape; integrar o botão de conversa sem perder o estado do lobby; testar fluxo lobby -> conversa -> retorno -> partida; validar no Redmi 12.
+- Não marcar como concluído até haver APK recompilado e teste real no dispositivo.
