@@ -8,6 +8,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Button;
+import android.os.Handler;
+import android.os.Looper;
 import android.graphics.Color;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -17,6 +20,9 @@ import javax.microedition.khronos.opengles.GL10;
 public final class NativeGameActivity extends Activity {
     private GameSurface surface;
     private Joystick joystick;
+    private TextView hud;
+    private final Handler hudHandler = new Handler(Looper.getMainLooper());
+    private final Runnable hudUpdater = new Runnable() { @Override public void run() { if (hud != null) hud.setText(NativeRenderer.getHud()); hudHandler.postDelayed(this, 300); } };
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -34,6 +40,22 @@ public final class NativeGameActivity extends Activity {
         overlay.setPadding(12, 18, 12, 12);
         frame.addView(overlay);
 
+        hud = new TextView(this);
+        hud.setTextColor(Color.WHITE);
+        hud.setTextSize(12);
+        hud.setPadding(14, 8, 14, 8);
+        hud.setBackgroundColor(0x99000000);
+        FrameLayout.LayoutParams hudParams = new FrameLayout.LayoutParams(-2, -2, Gravity.TOP | Gravity.START);
+        hudParams.setMargins(12, 64, 12, 0);
+        frame.addView(hud, hudParams);
+
+        Button pulse = new Button(this);
+        pulse.setText("PULSO");
+        pulse.setOnClickListener(v -> NativeRenderer.attack());
+        FrameLayout.LayoutParams pulseParams = new FrameLayout.LayoutParams(-2, -2, Gravity.BOTTOM | Gravity.END);
+        pulseParams.setMargins(0, 0, 22, 38);
+        frame.addView(pulse, pulseParams);
+
         joystick = new Joystick();
         int size = (int)(156 * getResources().getDisplayMetrics().density);
         FrameLayout.LayoutParams controls = new FrameLayout.LayoutParams(size, size, Gravity.BOTTOM | Gravity.START);
@@ -42,8 +64,8 @@ public final class NativeGameActivity extends Activity {
         setContentView(frame);
     }
 
-    @Override protected void onResume() { super.onResume(); if (surface != null) surface.onResume(); }
-    @Override protected void onPause() { if (joystick != null) joystick.release(); if (surface != null) surface.onPause(); super.onPause(); }
+    @Override protected void onResume() { super.onResume(); if (surface != null) surface.onResume(); hudHandler.post(hudUpdater); }
+    @Override protected void onPause() { hudHandler.removeCallbacks(hudUpdater); if (joystick != null) joystick.release(); if (surface != null) surface.onPause(); super.onPause(); }
 
     private final class Joystick extends View {
         private final Paint paint = new Paint(3);
@@ -88,6 +110,10 @@ public final class NativeGameActivity extends Activity {
         private static native void nativeResize(int width, int height);
         private static native void nativeRender();
         private static native void nativeSetMove(float x, float z);
+        private static native boolean nativeAttack();
+        private static native String nativeGetHud();
+        static void attack(){ nativeAttack(); }
+        static String getHud(){ return nativeGetHud(); }
         static void setMove(float x,float z){nativeSetMove(x,z);}
         @Override public void onSurfaceCreated(GL10 gl, EGLConfig config) { nativeInit(); }
         @Override public void onSurfaceChanged(GL10 gl, int width, int height) { nativeResize(width, height); }
