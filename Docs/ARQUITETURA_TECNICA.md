@@ -108,3 +108,9 @@ Antes de ampliar o projeto, a primeira prova técnica deverá compilar um aplica
 - Quando uma textura não existe, o renderer cria mapa compacto de fallback em memória; isso permite visualizar o pipeline sem adicionar imagens vazias ao APK.
 - Limitações: o modelo de hospital é um primeiro asset de integração, não um edifício artístico de alta fidelidade; ainda faltam mapas artísticos de alta resolução, transparência de vidro, tratamento completo de transformações hierárquicas/skinning e teste visual no Redmi 12.
 - Compilação CI da integração e validação em dispositivo devem ser registradas separadamente.
+
+
+## Validação de compilação — 24/11/2026
+- GitHub Actions: `assembleDebug` concluído com sucesso para o código nativo e Java integrado, commit `1512cc20c4ac90efbb0939b504403783f19e1131`.
+- Artefato `apocalypse-debug-apk` gerado e publicado no workflow `45419387888`.
+- Esta validação confirma compilação Android arm64-v8a; não comprova teste visual ou execução no Redmi 12. Teste físico e validação de shader em GPU permanecem pendentes.
