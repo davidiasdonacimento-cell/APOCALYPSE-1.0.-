@@ -4,6 +4,8 @@
 #include <vector>
 #include <cmath>
 #include <time.h>
+#include <cstdio>
+#include "survival_system.h"
 static double androidGetCurrentTimeNanos(){struct timespec t{};clock_gettime(CLOCK_MONOTONIC,&t);return (double)t.tv_sec*1000000000.0+(double)t.tv_nsec;}
 
 #define LOG_TAG "APOCALYPSE_ENGINE"
@@ -11,11 +13,12 @@ static double androidGetCurrentTimeNanos(){struct timespec t{};clock_gettime(CLO
 
 namespace {
 struct Vertex { float x,y,z,r,g,b; };
-GLuint program=0, vertexBuffer=0, playerBuffer=0;
+GLuint program=0, vertexBuffer=0, playerBuffer=0, survivalBuffer=0;
 GLint vertexCount=0, playerVertexCount=0;
 int surfaceWidth=1, surfaceHeight=1;
 float playerX=0.0f, playerZ=0.0f, moveX=0.0f, moveZ=0.0f;
 std::vector<Vertex> world, playerMesh;
+apocalypse::SurvivalSystem survival;
 
 Vertex v(float x,float y,float z,float r,float g,float b){return {x,y,z,r,g,b};}
 void triangle(Vertex a,Vertex b,Vertex c){world.push_back(a);world.push_back(b);world.push_back(c);}
@@ -126,6 +129,33 @@ void addPlayerModel(){
     cube(-0.16f,1.05f,-0.13f,0.32f,0.32f,0.30f,0.72f,0.56f,0.39f);
 }
 
+
+void addBox(std::vector<Vertex>& out,float x,float y,float z,float w,float h,float d,float r,float g,float b){
+    float x2=x+w,y2=y+h,z2=z+d;
+    Vertex a=v(x,y,z,r*.62f,g*.62f,b*.62f),b0=v(x2,y,z,r*.62f,g*.62f,b*.62f);
+    Vertex c=v(x2,y,z2,r*.62f,g*.62f,b*.62f),d0=v(x,y,z2,r*.62f,g*.62f,b*.62f);
+    Vertex A=v(x,y2,z,r,g,b),B=v(x2,y2,z,r,g,b),C=v(x2,y2,z2,r*.9f,g*.9f,b*.9f),D=v(x,y2,z2,r*.9f,g*.9f,b*.9f);
+    auto tri=[&](Vertex p,Vertex q,Vertex t){out.push_back(p);out.push_back(q);out.push_back(t);};
+    auto face=[&](Vertex p,Vertex q,Vertex t,Vertex u){tri(p,q,t);tri(p,t,u);};
+    face(A,B,C,D);face(a,b0,B,A);face(b0,c,C,B);face(c,d0,D,C);face(d0,a,A,D);
+}
+void buildSurvivalMesh(std::vector<Vertex>& mesh){
+    mesh.clear();
+    for(const auto& z:survival.zombies()){
+        if(z.state==2) continue;
+        addBox(mesh,z.x-0.28f,0.12f,z.z-0.22f,0.56f,0.78f,0.44f,0.28f,0.43f,0.25f);
+        addBox(mesh,z.x-0.19f,0.90f,z.z-0.16f,0.38f,0.36f,0.34f,0.42f,0.48f,0.32f);
+    }
+    for(const auto& p:survival.pickups()){
+        if(!p.active) continue;
+        float r=0.25f,g=0.65f,b=0.85f;
+        if(p.type==1){r=0.85f;g=0.62f;b=0.20f;}
+        if(p.type==2){r=0.65f;g=0.65f;b=0.68f;}
+        if(p.type==3){r=0.25f;g=0.85f;b=0.40f;}
+        addBox(mesh,p.x-0.18f,0.16f,p.z-0.18f,0.36f,0.36f,0.36f,r,g,b);
+    }
+}
+
 GLuint compileShader(GLenum type,const char* src){
     GLuint s=glCreateShader(type);glShaderSource(s,1,&src,nullptr);glCompileShader(s);
     GLint ok=GL_FALSE;glGetShaderiv(s,GL_COMPILE_STATUS,&ok);
@@ -144,6 +174,7 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeInit(JNIEn
     GLint linked=GL_FALSE;glGetProgramiv(program,GL_LINK_STATUS,&linked);
     if(linked!=GL_TRUE){char log[1024]={};glGetProgramInfoLog(program,sizeof(log),nullptr,log);LOGE("Program link: %s",log);glDeleteProgram(program);program=0;return;}
     buildCity();
+    survival.reset();
     glGenBuffers(1,&vertexBuffer);glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER,(GLsizeiptr)(world.size()*sizeof(Vertex)),world.data(),GL_STATIC_DRAW);
     vertexCount=(GLint)world.size();
@@ -172,6 +203,7 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     if(length>0.01f){playerX+=(moveX/length)*3.2f*dt;playerZ+=(moveZ/length)*3.2f*dt;}
     if(playerX < -25.0f)playerX=-25.0f;if(playerX>25.0f)playerX=25.0f;
     if(playerZ < -25.0f)playerZ=-25.0f;if(playerZ>25.0f)playerZ=25.0f;
+    survival.update(dt,playerX,playerZ);
     glUseProgram(program);
     GLint cam=glGetUniformLocation(program,"uCamera");
     GLint off=glGetUniformLocation(program,"uOffset");
@@ -182,10 +214,32 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     glEnableVertexAttribArray(0);glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)0);
     glEnableVertexAttribArray(1);glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(3*sizeof(float)));
     glDrawArrays(GL_TRIANGLES,0,vertexCount);
+    std::vector<Vertex> dynamicMesh;
+    buildSurvivalMesh(dynamicMesh);
+    if(!dynamicMesh.empty()){
+        if(!survivalBuffer) glGenBuffers(1,&survivalBuffer);
+        glUniform2f(off,0.0f,0.0f);
+        glBindBuffer(GL_ARRAY_BUFFER,survivalBuffer);
+        glBufferData(GL_ARRAY_BUFFER,(GLsizeiptr)(dynamicMesh.size()*sizeof(Vertex)),dynamicMesh.data(),GL_DYNAMIC_DRAW);
+        glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)0);
+        glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(3*sizeof(float)));
+        glDrawArrays(GL_TRIANGLES,0,(GLsizei)dynamicMesh.size());
+    }
     glUniform2f(off,playerX,playerZ);
     glBindBuffer(GL_ARRAY_BUFFER,playerBuffer);
     glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)0);
     glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(3*sizeof(float)));
     glDrawArrays(GL_TRIANGLES,0,playerVertexCount);
     glDisableVertexAttribArray(0);glDisableVertexAttribArray(1);
+}
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeAttack(JNIEnv*,jclass){
+    return survival.usePulse(playerX,playerZ)?JNI_TRUE:JNI_FALSE;
+}
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeGetHud(JNIEnv* env,jclass){
+    char text[180];
+    std::snprintf(text,sizeof(text),"VIDA %d/100   ZUMBIS %d\\nAGUA %d  COMIDA %d  MATERIAIS %d  KITS %d",
+        survival.health(),survival.aliveZombies(),survival.water(),survival.food(),survival.materials(),survival.medkits());
+    return env->NewStringUTF(text);
 }
