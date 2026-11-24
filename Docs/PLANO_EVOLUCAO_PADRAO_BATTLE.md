@@ -149,3 +149,8 @@ O APOCALYPSE deve adaptar os padrões adequados, sem copiar contas, loja, regras
 - Câmera acompanha a direção do deslocamento para reduzir a perda do cenário quando o jogador muda de sentido.
 - Iluminação difusa do shader de cenário reduzida para conter superexposição.
 - Persistência de saldo/upgrades, respawn de zumbis, orientação visual do modelo do jogador, calibração de materiais importados e teste físico continuam pendentes.
+
+## Ondas e loja de armas — 24/11/2026
+- Enviado: progressão automática de ondas, bônus de dinheiro e itens, spawn em torno do jogador, limite de 12 zumbis simultâneos.
+- Enviado: desbloqueio/seleção e recarga de shuriken, rifle e escopeta, integrados ao botão de ataque e HUD.
+- Pendente: projéteis 3D visíveis, trajetória, animações de ataque/recuo, efeitos de impacto, persistência e validação no Redmi 12.
