@@ -128,3 +128,20 @@ Antes de ampliar o projeto, a primeira prova técnica deverá compilar um aplica
 - Foi adicionado teste de `/health` que mostra separadamente presença do modelo/URL, chave do provedor e token do gateway.
 - Respostas HTTP de erro agora leem o corpo de erro do servidor e mostram status e mensagem úteis, inclusive distinção para 401 e 503.
 - Nenhuma chave privada é embutida no APK; o teste real depende das variáveis privadas do serviço Render e do token correspondente no aparelho.
+
+
+## Integração de voz ambiente da VERITY na partida — 24/11/2026
+- `NativeGameActivity` reutiliza as preferências de endpoint e token configuradas no lobby/conversa; nenhum segredo do provedor foi embutido no código.
+- Requisição HTTP ocorre em executor de fundo, não na thread de renderização nem na UI.
+- A IA recebe o texto do HUD nativo como contexto factual e produz uma fala curta; o ciclo inicia após 25 s e repete a cada 90 s durante a Activity.
+- Android TextToSpeech sintetiza em `pt-BR`; há controle persistente para ligar/desligar voz e legenda temporária.
+- Em pausa, os callbacks periódicos são removidos e a fala é interrompida; em destruição, executor e TTS são encerrados.
+- A VERITY tem offset lateral de 1,72 unidade e animação idle/walk de acordo com o movimento do jogador.
+- O shader da malha da VERITY usa normal derivada de `dFdx/dFdy` para iluminação volumétrica sem textura 2D plana.
+- O renderizador de sobrevivência agora constrói zumbis por partes volumétricas 3D (pelve, tronco, cabeça, braços, pernas e botas) e aplica oscilação de membros orientada pela fase de patrulha/perseguição.
+
+## Limites de personagem e validação
+- Os modelos atuais são geometria procedural low-poly, não assets humanos de alta fidelidade.
+- Skinning de glTF, hierarquia de nós, pesos de vértices, blendshapes e animações importadas continuam pendentes.
+- A animação do jogador ainda não foi convertida para um rig esquelético completo; a oscilação dos zumbis é procedural simplificada.
+- Build Android, logs de execução, TTS, resposta real do gateway e renderização em GPU precisam ser validados separadamente; CI não substitui teste físico.
