@@ -1,6 +1,6 @@
 # Fase 3 — Sistemas de sobrevivência
 
-**Status:** planejamento técnico registrado; implementação ainda pendente de compilação e validação no Android.
+**Status:** sistemas implementados no código e integrados ao motor; compilação e validação no Android ainda pendentes.
 
 ## Objetivo
 Adicionar um ciclo básico de sobrevivência ao APOCALYPSE sem comprometer o desempenho do Android. Os sistemas devem ser modulares e não podem ser tratados como concluídos antes de compilar e testar no aparelho.
@@ -61,5 +61,5 @@ Os nomes são propostas e devem ser adaptados à estrutura real existente após 
 ## Estado atual
 - Requisitos gerais de zumbis, combate, dano e vida: descritos no `README.md`.
 - Ordem e critérios da Fase 3: documentados neste arquivo.
-- Implementação funcional da Fase 3: pendente.
+- Módulo C++ `survival_system.h/.cpp`: criado e integrado ao motor nativo.\n- Zumbis: quatro entidades iniciais, estados de aproximação/perseguição e ataque com intervalo.\n- Vida: 100 pontos iniciais, dano abstrato e recuperação por kit médico.\n- Recursos: água, comida, materiais e kits médicos; coleta automática por proximidade.\n- Combate: ação fictícia de pulso com alcance, recarga e três pontos de resistência por zumbi.\n- Renderização: zumbis e itens desenhados no cenário; HUD Android mostra vida, quantidade de zumbis e recursos; botão PULSO aciona o combate.\n- Integração CMake: `survival_system.cpp` incluído na biblioteca nativa.\n- Implementação de código da Fase 3: enviada ao GitHub; ainda não validada por compilação.
 - Compilação e teste no Android: pendentes.
