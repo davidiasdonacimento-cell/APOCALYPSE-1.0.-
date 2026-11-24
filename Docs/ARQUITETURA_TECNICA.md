@@ -114,3 +114,17 @@ Antes de ampliar o projeto, a primeira prova técnica deverá compilar um aplica
 - GitHub Actions: `assembleDebug` concluído com sucesso para o código nativo e Java integrado, commit `1512cc20c4ac90efbb0939b504403783f19e1131`.
 - Artefato `apocalypse-debug-apk` gerado e publicado no workflow `45419387888`.
 - Esta validação confirma compilação Android arm64-v8a; não comprova teste visual ou execução no Redmi 12. Teste físico e validação de shader em GPU permanecem pendentes.
+
+
+## Ajustes de câmera, personagem e iluminação — 24/11/2026
+- A câmera foi reposicionada para terceira pessoa próxima, atrás e ligeiramente deslocada do jogador, com alvo próximo à altura do tronco.
+- A iluminação difusa do cenário e a contribuição ambiente/direta do shader PBR foram reduzidas para conter o excesso de claridade.
+- O modelo procedural do jogador recebeu camadas de roupa de sobrevivência, colete, bolsos, mochila, botas, cabelo e traços faciais simplificados.
+- A VERITY foi conectada ao render loop da partida como companheira ao lado do jogador.
+- Essas alterações precisam de inspeção visual no Redmi 12; não representam ainda um personagem artístico de alta fidelidade nem uma validação de FPS.
+
+## Diagnóstico da API VERITY — 24/11/2026
+- A tela de conversa agora normaliza o endereço do gateway para `/v1/chat/completions` quando o usuário informa apenas o domínio Render.
+- Foi adicionado teste de `/health` que mostra separadamente presença do modelo/URL, chave do provedor e token do gateway.
+- Respostas HTTP de erro agora leem o corpo de erro do servidor e mostram status e mensagem úteis, inclusive distinção para 401 e 503.
+- Nenhuma chave privada é embutida no APK; o teste real depende das variáveis privadas do serviço Render e do token correspondente no aparelho.
