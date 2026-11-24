@@ -35,7 +35,7 @@ bool parseFaceIndex(const std::string& token,Key& k){
 }
 void loadMtl(AAssetManager* assets,const std::string& path,std::unordered_map<std::string,PbrMaterial>& mats){
     std::vector<unsigned char> raw;if(!readAsset(assets,path.c_str(),raw))return;
-    std::istringstream in(std::string(raw.begin(),raw.end()));std::string line;PbrMaterial* m=nullptr;
+    std::istringstream in(std::string(raw.begin(),raw.end()));std::string line;PbrMaterial* m=nullptr;size_t slash=path.find_last_of("/");std::string folder=slash==std::string::npos?"":path.substr(0,slash+1);
     while(std::getline(in,line)){std::istringstream row(line);std::string tag;row>>tag;
         if(tag=="newmtl"){std::string name;row>>name;m=&mats[name];m->name=name;}
         else if(!m)continue;
@@ -43,11 +43,11 @@ void loadMtl(AAssetManager* assets,const std::string& path,std::unordered_map<st
         else if(tag=="d")row>>m->baseColor[3];
         else if(tag=="Pr")row>>m->roughness;
         else if(tag=="Pm")row>>m->metallic;
-        else if(tag=="map_Kd"){std::string f;row>>f;m->albedoPath=f;}
-        else if(tag=="map_Bump"||tag=="bump"||tag=="norm"){std::string f;row>>f;m->normalPath=f;}
-        else if(tag=="map_Pr"){std::string f;row>>f;m->roughnessPath=f;}
-        else if(tag=="map_Pm"){std::string f;row>>f;m->metallicPath=f;}
-        else if(tag=="map_RMA"){std::string f;row>>f;m->metallicRoughnessPath=f;}
+        else if(tag=="map_Kd"){std::string f;row>>f;m->albedoPath=folder+f;}
+        else if(tag=="map_Bump"||tag=="bump"||tag=="norm"){std::string f;row>>f;m->normalPath=folder+f;}
+        else if(tag=="map_Pr"){std::string f;row>>f;m->roughnessPath=folder+f;}
+        else if(tag=="map_Pm"){std::string f;row>>f;m->metallicPath=folder+f;}
+        else if(tag=="map_RMA"){std::string f;row>>f;m->metallicRoughnessPath=folder+f;}
     }
 }
 bool unpackAttribute(cgltf_accessor* accessor,size_t components,std::vector<float>& out){
