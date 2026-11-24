@@ -145,3 +145,8 @@ Antes de ampliar o projeto, a primeira prova técnica deverá compilar um aplica
 - Skinning de glTF, hierarquia de nós, pesos de vértices, blendshapes e animações importadas continuam pendentes.
 - A animação do jogador ainda não foi convertida para um rig esquelético completo; a oscilação dos zumbis é procedural simplificada.
 - Build Android, logs de execução, TTS, resposta real do gateway e renderização em GPU precisam ser validados separadamente; CI não substitui teste físico.
+
+## Ciclo procedural do sobrevivente — 24/11/2026
+- O modelo 3D do jogador agora atualiza a malha durante o movimento e desloca alternadamente pernas, botas e braços para formar um ciclo simples de caminhada.
+- Ao parar, a malha retorna à pose neutra. A atualização do buffer acontece somente durante o movimento e na transição para parado.
+- Isso é animação procedural de peças volumétricas, não skinning por pesos de vértices nem animação mocap; rig esquelético completo permanece pendente.
