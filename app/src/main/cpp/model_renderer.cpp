@@ -49,7 +49,8 @@ bool ModelRenderer::initialize(AAssetManager* assets){
   glGenBuffers(1,&dst.vertex);glBindBuffer(GL_ARRAY_BUFFER,dst.vertex);glBufferData(GL_ARRAY_BUFFER,src.vertices.size()*sizeof(ModelVertex),src.vertices.data(),GL_STATIC_DRAW);
   glGenBuffers(1,&dst.index);glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,dst.index);glBufferData(GL_ELEMENT_ARRAY_BUFFER,src.indices.size()*sizeof(uint32_t),src.indices.data(),GL_STATIC_DRAW);
   dst.albedo=makeTexture(assets,src.material.albedoPath,0,src.material.name.c_str());dst.normal=makeTexture(assets,src.material.normalPath,1,src.material.name.c_str());dst.packedMetalRough=!src.material.metallicRoughnessPath.empty();
-  if(dst.packedMetalRough){dst.roughnessMap=makeTexture(assets,src.material.metallicRoughnessPath,4,src.material.name.c_str());dst.metallicMap=dst.roughnessMap;}\n  else{dst.roughnessMap=makeTexture(assets,src.material.roughnessPath,2,src.material.name.c_str());dst.metallicMap=makeTexture(assets,src.material.metallicPath,3,src.material.name.c_str());}
+  if(dst.packedMetalRough){dst.roughnessMap=makeTexture(assets,src.material.metallicRoughnessPath,4,src.material.name.c_str());dst.metallicMap=dst.roughnessMap}
+  else{dst.roughnessMap=makeTexture(assets,src.material.roughnessPath,2,src.material.name.c_str());dst.metallicMap=makeTexture(assets,src.material.metallicPath,3,src.material.name.c_str());}
  }
  MR_LOG("OBJ importado: %d submalhas",meshCount_);return meshCount_>0;
 }
