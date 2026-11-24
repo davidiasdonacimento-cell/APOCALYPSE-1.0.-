@@ -142,3 +142,10 @@ O APOCALYPSE deve adaptar os padrões adequados, sem copiar contas, loja, regras
 - O modelo 3D do jogador agora atualiza a malha durante o movimento e desloca alternadamente pernas, botas e braços para formar um ciclo simples de caminhada.
 - Ao parar, a malha retorna à pose neutra. A atualização do buffer acontece somente durante o movimento e na transição para parado.
 - Isso é animação procedural de peças volumétricas, não skinning por pesos de vértices nem animação mocap; rig esquelético completo permanece pendente.
+
+
+## Correções de jogabilidade e apresentação — 24/11/2026
+- Loja funcional integrada à partida: $30 por zumbi derrotado, cura, melhoria de pulso e colete; transações validadas no módulo de sobrevivência.
+- Câmera acompanha a direção do deslocamento para reduzir a perda do cenário quando o jogador muda de sentido.
+- Iluminação difusa do shader de cenário reduzida para conter superexposição.
+- Persistência de saldo/upgrades, respawn de zumbis, orientação visual do modelo do jogador, calibração de materiais importados e teste físico continuam pendentes.
