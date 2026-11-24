@@ -80,3 +80,8 @@
 - A animação do jogador não possui ciclo esquelético completo; a locomoção procedural dos zumbis é uma oscilação simplificada.
 - Distância de acompanhamento da VERITY é um offset lateral fixo no espaço do jogador, sem navegação autônoma/evitação de obstáculos.
 - Compilação CI e validação visual/voz no Redmi 12 ainda são obrigatórias.
+
+## Ciclo procedural do sobrevivente — 24/11/2026
+- O modelo 3D do jogador agora atualiza a malha durante o movimento e desloca alternadamente pernas, botas e braços para formar um ciclo simples de caminhada.
+- Ao parar, a malha retorna à pose neutra. A atualização do buffer acontece somente durante o movimento e na transição para parado.
+- Isso é animação procedural de peças volumétricas, não skinning por pesos de vértices nem animação mocap; rig esquelético completo permanece pendente.
