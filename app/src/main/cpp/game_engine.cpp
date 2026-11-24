@@ -1,4 +1,6 @@
 #include <jni.h>
+#include <android/asset_manager_jni.h>
+#include "model_renderer.h"
 #include <GLES3/gl3.h>
 #include <android/log.h>
 #include <vector>
@@ -23,6 +25,7 @@ std::vector<Vertex> world, playerMesh;
 struct WorldCollider { float minX, maxX, minZ, maxZ; };
 std::vector<WorldCollider> worldColliders;
 apocalypse::SurvivalSystem survival;
+apocalypse::assets::ModelRenderer importedModels;
 
 Vertex v(float x,float y,float z,float r,float g,float b){return {x,y,z,r,g,b,0,0,3};}
 Vertex vt(float x,float y,float z,float r,float g,float b,float u,float vv,float m){return {x,y,z,r,g,b,u,vv,m};}
@@ -398,7 +401,7 @@ GLuint compileShader(GLenum type,const char* src){
 }
 }
 extern "C" JNIEXPORT void JNICALL
-Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeInit(JNIEnv*,jclass){
+Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeInit(JNIEnv* env,jclass,jobject javaAssets){
     const char* vs="#version 300 es\nlayout(location=0) in vec3 aPos; layout(location=1) in vec3 aColor; layout(location=2) in vec2 aUV; layout(location=3) in float aMaterial; uniform mat4 uMVP; out vec3 color; out vec3 worldPosition; out vec2 uv; flat out int materialId; void main(){worldPosition=aPos;gl_Position=uMVP*vec4(aPos,1.0);color=aColor;uv=aUV;materialId=int(aMaterial+0.5);}";
     const char* fs="#version 300 es\nprecision mediump float;in vec3 color;in vec3 worldPosition;in vec2 uv;flat in int materialId;uniform sampler2D uGrass;uniform sampler2D uConcrete;uniform sampler2D uAsphalt;out vec4 fragColor;void main(){vec3 texel=vec3(1.0);if(materialId==0)texel=texture(uGrass,uv).rgb;else if(materialId==1)texel=texture(uConcrete,uv).rgb;else if(materialId==2)texel=texture(uAsphalt,uv).rgb;vec3 normal=normalize(cross(dFdx(worldPosition),dFdy(worldPosition)));vec3 lightDir=normalize(vec3(-0.35,0.82,0.44));float diffuse=0.46+0.54*abs(dot(normal,lightDir));float distanceFog=clamp((gl_FragCoord.z-0.90)*2.8,0.0,0.20);vec3 lit=color*texel*diffuse;vec3 fog=vec3(0.10,0.14,0.16);fragColor=vec4(mix(lit,fog,distanceFog),1.0);}";
     GLuint a=compileShader(GL_VERTEX_SHADER,vs),b=compileShader(GL_FRAGMENT_SHADER,fs);
@@ -409,6 +412,7 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeInit(JNIEn
     if(linked!=GL_TRUE){char log[1024]={};glGetProgramInfoLog(program,sizeof(log),nullptr,log);LOGE("Program link: %s",log);glDeleteProgram(program);program=0;return;}
     buildCity();
     survival.reset();
+    if(!importedModels.initialize(AAssetManager_fromJava(env,javaAssets))) LOGE("Falha ao inicializar modelos OBJ/PBR");
     // Three small tileable starter material maps generated in memory: no unused APK files.
     const unsigned char base[3][3]={{48,72,43},{112,108,96},{48,52,56}};
     for(int k=0;k<3;k++){
@@ -475,6 +479,9 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     glEnableVertexAttribArray(2);glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(6*sizeof(float)));
     glEnableVertexAttribArray(3);glVertexAttribPointer(3,1,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(8*sizeof(float)));
     glDrawArrays(GL_TRIANGLES,0,vertexCount);
+    importedModels.render(viewProjection.m);
+    glUseProgram(program);
+    for(int i=0;i<3;i++){glActiveTexture(GL_TEXTURE0+i);glBindTexture(GL_TEXTURE_2D,surfaceTextures[i]);glUniform1i(glGetUniformLocation(program,texNames[i]),i);}
     std::vector<Vertex> dynamicMesh;
     buildSurvivalMesh(dynamicMesh);
     if(!dynamicMesh.empty()){
