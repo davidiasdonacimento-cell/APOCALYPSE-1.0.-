@@ -34,6 +34,7 @@ public final class VeritySceneActivity extends Activity {
     private boolean voiceEnabled=true;
     private SharedPreferences prefs;
     private final JSONArray history=new JSONArray();
+    private static final String SYSTEM_PROMPT = "Você é VERITY, companheira inteligente do jogador no jogo APOCALYPSE. Fale sempre em português brasileiro natural, com personalidade consistente, respostas contextuais e sem repetir bordões. Você pode iniciar a conversa espontaneamente, fazer perguntas relevantes e comentar o contexto que o jogador fornecer. Não afirme que viu acontecimentos do jogo se eles não foram enviados no contexto. Seja acolhedora, objetiva e útil.";
 
     private int dp(float v){return (int)(v*getResources().getDisplayMetrics().density+.5f);}
     private TextView label(String s,int size,int color){TextView t=new TextView(this);t.setText(s);t.setTextSize(size);t.setTextColor(color);return t;}
@@ -64,8 +65,15 @@ public final class VeritySceneActivity extends Activity {
         endpoint.setOnClickListener(v->configureEndpoint());
         Button back=new Button(this);back.setText("VOLTAR AO LOBBY");controls.addView(back);back.setOnClickListener(v->finish());
         root.addView(controls);setContentView(root);
-        addMessage("VERITY","Estou pronta para conversar quando a conexão com um modelo generativo estiver configurada.",false);
-        setStatus("A voz usa a síntese de fala PT-BR do Android. A IA generativa precisa de um endpoint.");
+        try { history.put(new JSONObject().put("role","system").put("content",SYSTEM_PROMPT)); } catch(Exception ignored) {}
+        String configured=prefs.getString("verity_endpoint","").trim();
+        if(configured.isEmpty()) {
+            addMessage("SISTEMA","Configure um endpoint de IA generativa para iniciar a conversa. Não há falas repetidas programadas.",false);
+            setStatus("IA ainda não configurada • voz PT-BR disponível");
+        } else {
+            setStatus("VERITY está iniciando a conversa…");
+            requestVerity(null);
+        }
         if(getIntent().getBooleanExtra("settings",false))configureEndpoint();
     }
     private void configureEndpoint(){
@@ -81,14 +89,17 @@ public final class VeritySceneActivity extends Activity {
         String message=input.getText().toString().trim();if(message.isEmpty())return;
         input.setText("");addMessage("VOCÊ",message,true);
         try{history.put(new JSONObject().put("role","user").put("content",message));}catch(Exception ignored){}
+        requestVerity(message);
+    }
+    private void requestVerity(String userMessage){
         String endpoint=prefs.getString("verity_endpoint","").trim();
-        if(endpoint.isEmpty()){addMessage("SISTEMA","Configure um endpoint de IA generativa nas opções. Não vou substituir a IA por respostas fixas.",false);return;}
+        if(endpoint.isEmpty()){setStatus("Configure um endpoint de IA generativa.");return;}
         setStatus("VERITY está pensando…");
         io.execute(()->{
             HttpURLConnection c=null;
             try{
                 JSONObject body=new JSONObject();body.put("model","local-model");body.put("messages",history);
-                body.put("temperature",0.8);body.put("stream",false);
+                body.put("temperature",0.85);body.put("stream",false);
                 c=(HttpURLConnection)new URL(endpoint).openConnection();c.setRequestMethod("POST");c.setConnectTimeout(12000);c.setReadTimeout(45000);
                 c.setDoOutput(true);c.setRequestProperty("Content-Type","application/json");
                 try(OutputStream os=c.getOutputStream()){os.write(body.toString().getBytes(StandardCharsets.UTF_8));}
@@ -99,7 +110,7 @@ public final class VeritySceneActivity extends Activity {
                 String answer=response.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content").trim();
                 if(answer.isEmpty())throw new IllegalStateException("A IA retornou uma resposta vazia.");
                 history.put(new JSONObject().put("role","assistant").put("content",answer));
-                runOnUiThread(()->{addMessage("VERITY",answer,false);setStatus("VERITY respondeu.");if(voiceEnabled&&ttsReady)tts.speak(answer,TextToSpeech.QUEUE_ADD,null,"verity-response");});
+                runOnUiThread(()->{addMessage("VERITY",answer,false);setStatus("VERITY respondeu por IA generativa.");if(voiceEnabled&&ttsReady)tts.speak(answer,TextToSpeech.QUEUE_ADD,null,"verity-response");});
             }catch(Exception e){setStatus("Falha na IA: "+e.getMessage());runOnUiThread(()->addMessage("CONEXÃO", "Não consegui obter uma resposta generativa. Verifique o endpoint e a conexão.",false));}
             finally{if(c!=null)c.disconnect();}
         });
