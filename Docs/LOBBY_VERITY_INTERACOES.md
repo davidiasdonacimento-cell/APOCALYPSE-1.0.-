@@ -1,33 +1,48 @@
 # Lobby 3D — VERITY
 
-**Status:** primeira cena 3D procedural integrada ao projeto Android/OpenGL ES; compilação e validação no aparelho ainda pendentes.
+**Status:** personagem 3D procedural com rig articulado por juntas e animações de demonstração implementados no código. Compilação e validação Android ainda pendentes.
 
-## Fluxo confirmado
-1. O jogador toca em INICIAR JOGO no menu principal.
-2. Abre o lobby 3D de Verity, com apresentação curta e opção de pular.
-3. Verity aparece como personagem tridimensional renderizada pelo OpenGL ES 3.0.
-4. O jogador pode abrir a conversa da Verity e voltar ao lobby sem iniciar a partida.
-5. A partida só começa ao tocar em COMEÇAR PARTIDA.
+## Fluxo
+1. INICIAR JOGO abre a cena 3D da Verity.
+2. Apresentação curta com opção de pular.
+3. O jogador pode conversar com Verity antes da partida.
+4. Os controles do lobby permitem acenar e testar a caminhada.
+5. COMEÇAR PARTIDA abre a cena nativa de sobrevivência.
 
-## Implementação 3D atual
-- `Verity3DActivity.java`: Activity Android com GLSurfaceView, cena de apresentação, botão de conversa e botão de início explícito da partida.
-- `verity_3d.cpp`: módulo C++ separado para renderização OpenGL ES 3.0.
-- Personagem low-poly procedural com cabeça, rosto simplificado, cabelo claro, tronco, jaqueta azul, braços, pernas e botas.
-- Câmera em perspectiva, profundidade e leve movimento idle.
-- O módulo é compilado pela biblioteca nativa `apocalypse_engine`.
-- `MainActivity` direciona INICIAR JOGO para a nova cena 3D.
+## Rig e personagem
+- Arquivo: `app/src/main/cpp/verity_3d.cpp`.
+- Esqueleto procedural articulado: raiz/pelve, coluna/peito, pescoço/cabeça, ombros, cotovelos, mãos, quadris, joelhos e tornozelos.
+- As posições das juntas são avaliadas por frame e alimentam os segmentos do corpo.
+- Cabeça, tronco e membros são construídos como malha low-poly procedural.
+- Cabelo claro, roupa azul, rosto, olhos e detalhes faciais simplificados.
+- A malha é atualizada em buffer dinâmico para permitir poses animadas.
 
-## Limites desta primeira versão
-- O modelo é construído por geometria procedural; ainda não é um modelo artístico externo com textura PBR.
-- Ainda não há esqueleto/rig, animação de caminhada, sincronização labial ou expressões faciais.
-- A movimentação do jogador pelo lobby e a detecção de proximidade real ainda não foram conectadas.
-- O diálogo usa a Activity de conversa já existente; o retorno deve preservar o lobby.
-- Não afirmar que está funcional no aparelho até compilar e testar.
+## Animações implementadas no código
+- **Idle:** oscilação corporal sutil.
+- **Aceno:** braço direito levantado com movimento repetido.
+- **Caminhada demonstrativa:** braços e pernas alternam em ciclo.
+- **Fala:** boca abre e fecha em ciclo enquanto o modo de conversa está ativo.
+- **Piscar:** escala vertical dos olhos reduz brevemente em intervalos.
+- **Expressão:** detalhes faciais simplificados e boca animada; ainda não há blendshapes/articulação facial avançada.
 
-## Próximas etapas
-1. Compilar a biblioteca C++ e corrigir erros reais.
-2. Abrir a cena no Android e verificar câmera, proporções e desempenho.
-3. Melhorar o modelo e adicionar materiais/texturas.
-4. Adicionar rig e animações idle, olhar, aceno e caminhada.
-5. Implementar movimento do jogador, proximidade e menu contextual.
-6. Validar retorno da conversa e início da partida no dispositivo.
+## Controles do lobby
+- MENSAGEM PARA VERITY: abre a Activity de conversa e ativa o modo de fala.
+- ACENAR / EXPRESSÃO: ativa a animação de aceno.
+- TESTAR ANIMAÇÃO DE CAMINHADA: executa o ciclo de caminhada no lugar.
+- COMEÇAR PARTIDA: inicia a cena de jogo somente por ação explícita.
+
+## Limites que continuam pendentes
+- O rig é procedural por juntas e segmentos; não é um esqueleto importado com skinning por pesos de vértices.
+- A caminhada atual é demonstração no lugar; ainda não move a personagem pelo cenário.
+- Não há captura de voz/sincronização labial com fonemas reais.
+- Expressões são básicas; não há sistema completo de emoções ou blendshapes.
+- O modelo ainda é low-poly sem textura PBR ou arquivo artístico externo.
+- Movimento do jogador, proximidade física e menu contextual no lobby ainda não foram conectados.
+- Compilação, teste visual, desempenho e ciclo de vida precisam ser validados em Android real.
+
+## Próxima validação obrigatória
+1. Compilar C++ e Java com a configuração Android do projeto.
+2. Corrigir todos os erros de compilação/link JNI.
+3. Executar no Redmi 12 e conferir enquadramento, juntas, animações e consumo.
+4. Verificar retorno da conversa e início da partida.
+5. Só então marcar a implementação como validada.
