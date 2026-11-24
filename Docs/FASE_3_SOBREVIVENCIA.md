@@ -88,3 +88,14 @@ Os nomes são propostas e devem ser adaptados à estrutura real existente após 
 - Saldo e melhorias são mantidos apenas durante a sessão atual; persistência entre partidas/fechamento ainda não foi implementada.
 - A quantidade inicial continua limitada às quatro entidades existentes; não há reaparecimento de zumbis nesta etapa.
 - A loja foi integrada à Activity Android por JNI; compilação e teste real no Redmi 12 ainda são necessários.
+
+
+## Ondas e loja de armas — 24/11/2026
+- A primeira onda contém quatro zumbis. Ao eliminar todos, a próxima onda começa automaticamente com quantidade crescente até o limite de 12 inimigos ativos.
+- A cada onda concluída, o jogador recebe bônus de dinheiro (US$ 100 + US$ 25 por número da nova onda), um kit médico e cinco shurikens de reserva.
+- Os zumbis das ondas posteriores recebem resistência crescente em etapas; o sistema limita a quantidade simultânea para controlar custo de CPU.
+- Loja: desbloqueio de shurikens ($100, 12 unidades), rifle ($260, 30 munições) e escopeta ($220, 12 cartuchos); recargas custam $45, $80 e $70, respectivamente.
+- Armas podem ser selecionadas no painel da loja. O botão de combate usa a arma selecionada: pulso de curto alcance, shuriken de alcance médio, rifle de longo alcance ou escopeta de alcance curto e dano maior.
+- A resolução atual é arcade instantânea por alcance/alvo mais próximo; projéteis 3D visíveis, trajetória física, animações de arremesso/recuo e efeitos de impacto ainda não foram implementados.
+- Ondas, saldo, armas e munições ainda não são persistidos entre partidas.
+- Compilação e teste no Redmi 12 permanecem pendentes.
