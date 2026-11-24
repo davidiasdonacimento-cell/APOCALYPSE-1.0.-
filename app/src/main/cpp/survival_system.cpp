@@ -23,6 +23,7 @@ void SurvivalSystem::reset() {
     pickupList.push_back({17.0f, -14.0f, 0, true});
 }
 void SurvivalSystem::update(float dt,float px,float pz) {
+    lastPlayerX=px; lastPlayerZ=pz;
     dt=std::max(0.0f,std::min(dt,0.05f));
     pulseCooldown=std::max(0.0f,pulseCooldown-dt);
     for(auto& z:zombieList) {
@@ -70,8 +71,8 @@ void SurvivalSystem::spawnWave() {
     for(int i=0;i<count;i++) {
         const float angle=(float)i*6.2831853f/(float)count + (float)waveNumber*0.37f;
         const float radius=10.0f+(float)((i*7+waveNumber*3)%7);
-        const float x=std::cos(angle)*radius;
-        const float z=std::sin(angle)*radius;
+        const float x=lastPlayerX+std::cos(angle)*radius;
+        const float z=lastPlayerZ+std::sin(angle)*radius;
         zombieList.push_back({x,z,3+(waveNumber-1)/3,0,0.0f,0.0f});
     }
 }
