@@ -8,9 +8,9 @@ Jogo de sobrevivência zumbi para Android, com mundo explorável, combate, colet
 
 - **Não usar Unreal Engine.** A referência a Unreal Engine 5.8 que apareceu na primeira versão deste README foi um erro e está descartada.
 - O objetivo é desenvolver e compilar para Android, priorizando o fluxo de trabalho pelo próprio celular, sem exigir um PC.
-- O usuário pediu para aproveitar a mesma base/motor do BATTLE UNIVERSE. Antes de declarar qual tecnologia será usada, é necessário inspecionar o código real do BATTLE UNIVERSE. O nome do motor e a composição exata da tecnologia ainda não foram verificados.
-- Java, C++, OpenGL ES e Gradle foram mencionados anteriormente como possíveis partes da base Android do BATTLE, mas isso não constitui confirmação técnica.
-- Nenhuma ferramenta de compilação completa diretamente no Android foi validada até agora. A viabilidade precisa ser comprovada antes de prometer APK.
+- A auditoria do repositório BATTLE-UNIVERSE confirmou a base técnica: Java na camada Android, C++17 no motor nativo, OpenGL ES 3.0 para renderização, Gradle para o projeto Android e CMake para compilar o código C++.
+- O APOCALYPSE deve aproveitar essa mesma família tecnológica, adaptando os módulos ao jogo de sobrevivência; não copiar o jogo BATTLE inteiro nem substituir seus arquivos.
+- A compilação no próprio celular ainda não foi validada. O workflow existente do BATTLE usa `ubuntu-latest` no GitHub Actions, o que é compilação em nuvem, não compilação no aparelho. Precisamos provar o fluxo local Android antes de prometer APK.
 
 ## Visão do jogo
 
