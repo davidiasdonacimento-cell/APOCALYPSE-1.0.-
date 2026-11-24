@@ -239,7 +239,7 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeAttack(JNI
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeGetHud(JNIEnv* env,jclass){
     char text[180];
-    std::snprintf(text,sizeof(text),"VIDA %d/100   ZUMBIS %d\\nAGUA %d  COMIDA %d  MATERIAIS %d  KITS %d",
+    std::snprintf(text,sizeof(text),"VIDA %d/100   ZUMBIS %d\nAGUA %d  COMIDA %d  MATERIAIS %d  KITS %d",
         survival.health(),survival.aliveZombies(),survival.water(),survival.food(),survival.materials(),survival.medkits());
     return env->NewStringUTF(text);
 }
