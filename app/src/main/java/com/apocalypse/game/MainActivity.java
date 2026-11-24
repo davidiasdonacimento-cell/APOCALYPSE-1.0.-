@@ -52,7 +52,7 @@ public final class MainActivity extends Activity {
         sm.bottomMargin=dp(22); root.addView(sub,sm);
         section(root,"LOBBY PRINCIPAL","Prepare sua jornada antes de entrar no mundo.");
         Button start=button("▶  INICIAR JOGO",Color.rgb(22,93,155)); root.addView(start);
-        start.setOnClickListener(v->startActivity(new Intent(this,VeritySceneActivity.class)));
+        start.setOnClickListener(v->startActivity(new Intent(this,VerityLobbyActivity.class)));
         Button engine=button("TESTAR MOTOR 3D • OPENGL ES",Color.rgb(20,115,105)); root.addView(engine);
         engine.setOnClickListener(v->startActivity(new Intent(this,NativeGameActivity.class)));
         Button resume=button("CONTINUAR",Color.rgb(47,57,78)); root.addView(resume);
