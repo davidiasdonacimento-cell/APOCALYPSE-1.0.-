@@ -100,13 +100,15 @@ public final class NativeGameActivity extends Activity {
         GameSurface() {
             super(NativeGameActivity.this);
             setEGLContextClientVersion(3);
-            setRenderer(new NativeRenderer());
+            setRenderer(new NativeRenderer(NativeGameActivity.this.getAssets()));
             setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         }
     }
 
     private static final class NativeRenderer implements GLSurfaceView.Renderer {
         static { System.loadLibrary("apocalypse_engine"); }
+        private final AssetManager assets;
+        NativeRenderer(AssetManager assets) { this.assets = assets; }
         private static native void nativeInit(AssetManager assets);
         private static native void nativeResize(int width, int height);
         private static native void nativeRender();
@@ -116,7 +118,7 @@ public final class NativeGameActivity extends Activity {
         static void attack(){ nativeAttack(); }
         static String getHud(){ return nativeGetHud(); }
         static void setMove(float x,float z){nativeSetMove(x,z);}
-        @Override public void onSurfaceCreated(GL10 gl, EGLConfig config) { nativeInit(NativeGameActivity.this.getAssets()); }
+        @Override public void onSurfaceCreated(GL10 gl, EGLConfig config) { nativeInit(assets); }
         @Override public void onSurfaceChanged(GL10 gl, int width, int height) { nativeResize(width, height); }
         @Override public void onDrawFrame(GL10 gl) { nativeRender(); }
     }
