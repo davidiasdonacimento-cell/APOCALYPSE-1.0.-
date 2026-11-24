@@ -1,0 +1,12 @@
+newmtl concrete
+Kd 0.82 0.80 0.74
+Pr 0.82
+Pm 0.02
+newmtl glass
+Kd 0.38 0.68 0.82
+Pr 0.16
+Pm 0.72
+newmtl metal
+Kd 0.42 0.46 0.48
+Pr 0.32
+Pm 0.78
