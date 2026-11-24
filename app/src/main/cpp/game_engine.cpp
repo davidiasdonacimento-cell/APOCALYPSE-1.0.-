@@ -24,6 +24,49 @@ apocalypse::SurvivalSystem survival;
 Vertex v(float x,float y,float z,float r,float g,float b){return {x,y,z,r,g,b};}
 void triangle(Vertex a,Vertex b,Vertex c){world.push_back(a);world.push_back(b);world.push_back(c);}
 void quad(Vertex a,Vertex b,Vertex c,Vertex d){triangle(a,b,c);triangle(a,c,d);}
+
+// Malhas orgânicas trianguladas: folhagem, troncos, pneus e anatomia.
+template<class Sink>
+void ellipsoid(Sink& out,float cx,float cy,float cz,float rx,float ry,float rz,
+               float r,float g,float b,int rings=10,int segments=14){
+    const float pi=3.14159265358979323846f;
+    for(int iy=0;iy<rings;iy++){
+        float p0=-pi*0.5f+pi*(float)iy/(float)rings;
+        float p1=-pi*0.5f+pi*(float)(iy+1)/(float)rings;
+        for(int ix=0;ix<segments;ix++){
+            float t0=2.0f*pi*(float)ix/(float)segments;
+            float t1=2.0f*pi*(float)(ix+1)/(float)segments;
+            auto point=[&](float p,float t){
+                float cp=cosf(p);
+                return v(cx+rx*cp*cosf(t),cy+ry*sinf(p),cz+rz*cp*sinf(t),r,g,b);
+            };
+            Vertex a=point(p0,t0),bb=point(p0,t1),c=point(p1,t1),d=point(p1,t0);
+            out.push_back(a);out.push_back(bb);out.push_back(c);
+            out.push_back(a);out.push_back(c);out.push_back(d);
+        }
+    }
+}
+template<class Sink>
+void taperedCylinder(Sink& out,float x,float y,float z,float radiusBottom,
+                     float radiusTop,float height,float r,float g,float b,int segments=12){
+    const float pi=3.14159265358979323846f;
+    for(int i=0;i<segments;i++){
+        float a0=2.0f*pi*(float)i/(float)segments;
+        float a1=2.0f*pi*(float)(i+1)/(float)segments;
+        Vertex p0=v(x+cosf(a0)*radiusBottom,y,z+sinf(a0)*radiusBottom,r*.72f,g*.72f,b*.72f);
+        Vertex p1=v(x+cosf(a1)*radiusBottom,y,z+sinf(a1)*radiusBottom,r*.72f,g*.72f,b*.72f);
+        Vertex q0=v(x+cosf(a0)*radiusTop,y+height,z+sinf(a0)*radiusTop,r,g,b);
+        Vertex q1=v(x+cosf(a1)*radiusTop,y+height,z+sinf(a1)*radiusTop,r,g,b);
+        out.push_back(p0);out.push_back(p1);out.push_back(q1);
+        out.push_back(p0);out.push_back(q1);out.push_back(q0);
+    }
+}
+void organicTree(float x,float z,float scale=1.0f){
+    taperedCylinder(world,x,0.12f,z,0.13f*scale,0.085f*scale,1.45f*scale,0.28f,0.17f,0.10f);
+    ellipsoid(world,x,1.72f*scale+0.12f,z,0.72f*scale,0.78f*scale,0.68f*scale,0.12f,0.27f,0.13f,12,16);
+    ellipsoid(world,x-0.38f*scale,1.48f*scale+0.12f,z+0.10f*scale,0.48f*scale,0.52f*scale,0.46f*scale,0.15f,0.31f,0.15f,10,14);
+    ellipsoid(world,x+0.36f*scale,1.55f*scale+0.12f,z-0.08f*scale,0.46f*scale,0.54f*scale,0.45f*scale,0.10f,0.23f,0.12f,10,14);
+}
 float terrainHeight(float x,float z){
     // Subtle, deterministic undulation; roads and building pads remain level.
     return 0.045f*std::sin(x*0.31f)*std::cos(z*0.27f)
@@ -82,18 +125,18 @@ void detailedBuilding(float x,float z,float w,float d,float h,float r,float g,fl
     building(x+w*0.62f,z+d*0.55f,0.55f,0.48f,0.38f,0.28f,0.29f,0.28f);
 }
 void streetLight(float x,float z){
-    building(x-0.045f,z-0.045f,0.09f,0.09f,3.1f,0.19f,0.20f,0.20f);
-    building(x-0.04f,z-0.65f,0.08f,0.68f,0.08f,0.20f,0.21f,0.20f);
-    building(x-0.16f,z-0.72f,0.30f,0.22f,0.10f,0.80f,0.72f,0.43f);
+    taperedCylinder(world,x,0.12f,z,0.075f,0.045f,3.05f,0.20f,0.22f,0.22f,10);
+    taperedCylinder(world,x,3.12f,z-0.38f,0.045f,0.035f,0.08f,0.20f,0.22f,0.22f,10);
+    ellipsoid(world,x,3.12f,z-0.70f,0.20f,0.10f,0.15f,0.92f,0.78f,0.48f,8,12);
 }
 void abandonedCar(float x,float z,float bodyR,float bodyG,float bodyB){
     building(x,z,1.55f,2.65f,0.62f,bodyR,bodyG,bodyB);
     building(x+0.20f,z+0.38f,1.15f,1.45f,0.48f,0.16f,0.22f,0.25f);
-    // Four dark wheel blocks and a damaged hood panel.
-    building(x-0.10f,z+0.35f,0.16f,0.42f,0.25f,0.055f,0.06f,0.065f);
-    building(x+1.48f,z+0.35f,0.16f,0.42f,0.25f,0.055f,0.06f,0.065f);
-    building(x-0.10f,z+1.92f,0.16f,0.42f,0.25f,0.055f,0.06f,0.065f);
-    building(x+1.48f,z+1.92f,0.16f,0.42f,0.25f,0.055f,0.06f,0.065f);
+    // Pneus arredondados, sem rodas cúbicas.
+    ellipsoid(world,x+0.02f,0.39f,z+0.52f,0.16f,0.19f,0.30f,0.045f,0.05f,0.055f,10,14);
+    ellipsoid(world,x+1.43f,0.39f,z+0.52f,0.16f,0.19f,0.30f,0.045f,0.05f,0.055f,10,14);
+    ellipsoid(world,x+0.02f,0.39f,z+2.10f,0.16f,0.19f,0.30f,0.045f,0.05f,0.055f,10,14);
+    ellipsoid(world,x+1.43f,0.39f,z+2.10f,0.16f,0.19f,0.30f,0.045f,0.05f,0.055f,10,14);
 }
 void addStreetDetails(){
     // Broken lane markings, crossings and drainage strips.
@@ -122,8 +165,7 @@ void addResidentialDetails(){
     for(int i=0;i<22;i++){
         float x=-22.0f+(float)((i*11)%43);
         float z=-20.0f+(float)((i*17)%39);
-        building(x,z,0.22f,0.22f,1.15f,0.28f,0.19f,0.12f);
-        building(x-0.55f,z-0.48f,1.30f,1.20f,1.05f,0.12f,0.25f,0.13f);
+        organicTree(x,z,0.78f+0.08f*(i%4));
     }
     for(int i=0;i<10;i++){
         float x=-20.0f+(float)(i*4.0f),z=13.5f;
@@ -191,8 +233,7 @@ void buildCity(){
     ground(-19.4f,8.0f,5.8f,0.55f,0.42f,0.39f,0.29f,0.15f);
     for(int i=0;i<8;i++){
         float tx=-19.0f+(i%4)*1.6f,tz=6.0f+(i/4)*3.0f;
-        building(tx,tz,0.22f,0.22f,1.1f,0.28f,0.18f,0.12f);
-        building(tx-0.45f,tz-0.35f,1.1f,0.95f,1.25f,0.12f,0.30f,0.14f);
+        organicTree(tx,tz,0.82f+0.06f*(i%3));
     }
     addStreetDetails();
     addResidentialDetails();
@@ -200,22 +241,15 @@ void buildCity(){
 
 void addPlayerModel(){
     playerMesh.clear();
-    // Stylized survivor: boots/legs, torso, arms and head.
-    auto cube=[&](float x,float y,float z,float w,float h,float d,float r,float g,float b){
-        float x2=x+w,y2=y+h,z2=z+d;
-        Vertex a=v(x,y,z,r*.65f,g*.65f,b*.65f),b0=v(x2,y,z,r*.65f,g*.65f,b*.65f);
-        Vertex c=v(x2,y,z2,r*.65f,g*.65f,b*.65f),d0=v(x,y,z2,r*.65f,g*.65f,b*.65f);
-        Vertex A=v(x,y2,z,r,g,b),B=v(x2,y2,z,r,g,b),C=v(x2,y2,z2,r*.9f,g*.9f,b*.9f),D=v(x,y2,z2,r*.9f,g*.9f,b*.9f);
-        auto tri=[&](Vertex p,Vertex q,Vertex t){playerMesh.push_back(p);playerMesh.push_back(q);playerMesh.push_back(t);};
-        auto quad=[&](Vertex p,Vertex q,Vertex t,Vertex u){tri(p,q,t);tri(p,t,u);};
-        quad(A,B,C,D);quad(a,b0,B,A);quad(b0,c,C,B);quad(c,d0,D,C);quad(d0,a,A,D);
-    };
-    cube(-0.22f,0.05f,-0.16f,0.17f,0.42f,0.30f,0.18f,0.20f,0.24f);
-    cube(0.05f,0.05f,-0.16f,0.17f,0.42f,0.30f,0.18f,0.20f,0.24f);
-    cube(-0.25f,0.47f,-0.19f,0.50f,0.55f,0.38f,0.20f,0.34f,0.29f);
-    cube(-0.34f,0.48f,-0.15f,0.12f,0.48f,0.27f,0.72f,0.56f,0.39f);
-    cube(0.22f,0.48f,-0.15f,0.12f,0.48f,0.27f,0.72f,0.56f,0.39f);
-    cube(-0.16f,1.05f,-0.13f,0.32f,0.32f,0.30f,0.72f,0.56f,0.39f);
+    // Silhueta humana arredondada: botas, pernas, tronco, braços e cabeça.
+    ellipsoid(playerMesh,-0.12f,0.20f,0.0f,0.13f,0.20f,0.15f,0.10f,0.11f,0.13f);
+    ellipsoid(playerMesh, 0.12f,0.20f,0.0f,0.13f,0.20f,0.15f,0.10f,0.11f,0.13f);
+    taperedCylinder(playerMesh,-0.12f,0.28f,0.0f,0.105f,0.12f,0.34f,0.20f,0.23f,0.25f);
+    taperedCylinder(playerMesh, 0.12f,0.28f,0.0f,0.105f,0.12f,0.34f,0.20f,0.23f,0.25f);
+    ellipsoid(playerMesh,0.0f,0.78f,0.0f,0.30f,0.34f,0.20f,0.19f,0.34f,0.28f,12,16);
+    ellipsoid(playerMesh,-0.36f,0.73f,0.0f,0.105f,0.31f,0.12f,0.68f,0.52f,0.37f);
+    ellipsoid(playerMesh, 0.36f,0.73f,0.0f,0.105f,0.31f,0.12f,0.68f,0.52f,0.37f);
+    ellipsoid(playerMesh,0.0f,1.22f,0.0f,0.17f,0.20f,0.16f,0.72f,0.57f,0.42f,12,16);
 }
 
 
@@ -232,8 +266,10 @@ void buildSurvivalMesh(std::vector<Vertex>& mesh){
     mesh.clear();
     for(const auto& z:survival.zombies()){
         if(z.state==2) continue;
-        addBox(mesh,z.x-0.28f,0.12f,z.z-0.22f,0.56f,0.78f,0.44f,0.28f,0.43f,0.25f);
-        addBox(mesh,z.x-0.19f,0.90f,z.z-0.16f,0.38f,0.36f,0.34f,0.42f,0.48f,0.32f);
+        ellipsoid(mesh,z.x,0.58f,z.z,0.27f,0.40f,0.22f,0.25f,0.39f,0.22f,9,12);
+        ellipsoid(mesh,z.x,1.02f,z.z,0.19f,0.20f,0.18f,0.39f,0.45f,0.30f,9,12);
+        ellipsoid(mesh,z.x-0.30f,0.62f,z.z,0.09f,0.30f,0.10f,0.25f,0.36f,0.21f,8,10);
+        ellipsoid(mesh,z.x+0.30f,0.62f,z.z,0.09f,0.30f,0.10f,0.25f,0.36f,0.21f,8,10);
     }
     for(const auto& p:survival.pickups()){
         if(!p.active) continue;
