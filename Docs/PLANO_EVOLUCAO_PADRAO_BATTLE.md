@@ -117,3 +117,12 @@ O APOCALYPSE deve adaptar os padrões adequados, sem copiar contas, loja, regras
 - GitHub Actions: `assembleDebug` concluído com sucesso para o código nativo e Java integrado, commit `1512cc20c4ac90efbb0939b504403783f19e1131`.
 - Artefato `apocalypse-debug-apk` gerado e publicado no workflow `45419387888`.
 - Esta validação confirma compilação Android arm64-v8a; não comprova teste visual ou execução no Redmi 12. Teste físico e validação de shader em GPU permanecem pendentes.
+
+
+## Incremento — câmera próxima, companheira e diagnóstico VERITY — 24/11/2026
+- Implementada câmera em terceira pessoa próxima do jogador.
+- Atualizado o modelo procedural do sobrevivente com peças visuais de equipamento e detalhes de rosto/roupa.
+- VERITY passou a ser desenhada também dentro do render loop da partida, posicionada ao lado do jogador e com ciclo de caminhada.
+- Reduzida a intensidade de iluminação do cenário e do shader PBR.
+- Adicionado diagnóstico de saúde do gateway e leitura de mensagens HTTP reais na conversa da VERITY.
+- Pendente: compilação deste incremento, inspeção da imagem no dispositivo, confirmação de que o endpoint/token/provedor estão corretos e substituição dos modelos procedurais por assets artísticos rigados.
