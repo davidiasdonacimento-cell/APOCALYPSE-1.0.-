@@ -15,6 +15,7 @@ struct Projectile {
     float travelled=0.0f, maxRange=0.0f, speed=0.0f;
     int damage=1, weapon=0;
 };
+struct Impact { float x=0.0f, z=0.0f, life=0.0f; int weapon=0; };
 struct Pickup {
     float x=0.0f, z=0.0f;
     int type=0; // 0 water, 1 food, 2 materials, 3 medkit
@@ -39,6 +40,7 @@ public:
     int aliveZombies() const;
     const std::vector<Zombie>& zombies() const { return zombieList; }
     const std::vector<Pickup>& pickups() const { return pickupList; }\n    const std::vector<Projectile>& projectiles() const { return projectileList; }
+    const std::vector<Impact>& impacts() const { return impactList; }
 private:
     int playerHealth=100;
     int moneyCount=0;
@@ -54,5 +56,6 @@ private:
     float pulseCooldown=0.0f;
     std::vector<Zombie> zombieList;
     std::vector<Pickup> pickupList;\n    std::vector<Projectile> projectileList;
+    std::vector<Impact> impactList;
 };
 }
