@@ -57,5 +57,7 @@ A primeira entrega técnica será apenas a base espacial da metrópole: terreno,
 - Planejamento das quatro regiões: documentado.
 - Conexões entre regiões: documentadas.
 - Sistema de chunks: especificado, ainda não implementado.
-- Terreno 3D e edifícios: ainda não implementados.
-- Renderização e teste no Android: pendentes.
+- Terreno 3D e blockout urbano: presentes no renderer nativo.
+- Primeiro distrito recebeu fachadas com janelas/portas, variação de edifícios, anexo hospitalar, caminhos e árvores do parque, postes, carros abandonados, marcações viárias, entulho e cercas procedurais.
+- Ainda não há modelos artísticos externos, texturas PBR, interiores exploráveis, colisão do cenário ou chunks; o mapa continua sendo uma área procedural de primeira etapa.
+- Renderização após a nova expansão, compilação CI e teste no Android: pendentes.
