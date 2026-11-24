@@ -187,8 +187,8 @@ void addExplorableClinic(){
     building(x,z+d-t,w,t,h,0.67f,0.68f,0.64f);
     building(x,z,t,d,h,0.62f,0.64f,0.61f);
     building(x+w-t,z,t,d,h,0.62f,0.64f,0.61f);
-    building(x,z,t,(w-door)*0.5f,h,0.67f,0.68f,0.64f);
-    building(x+(w+door)*0.5f,z,t,(w-door)*0.5f,h,0.67f,0.68f,0.64f);
+    building(x,z,(w-door)*0.5f,t,h,0.67f,0.68f,0.64f);
+    building(x+(w+door)*0.5f,z,(w-door)*0.5f,t,h,0.67f,0.68f,0.64f);
     // Interior partitions, reception counter, beds and storage.
     building(x+2.75f,z+2.1f,0.14f,2.0f,2.25f,0.58f,0.59f,0.56f);
     building(x+0.75f,z+1.1f,1.65f,0.62f,0.78f,0.42f,0.45f,0.43f);
