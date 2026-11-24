@@ -7,6 +7,7 @@ struct Zombie {
     int health=3;
     int state=0; // 0 patrol, 1 chase, 2 defeated
     float attackCooldown=0.0f;
+    float patrolPhase=0.0f;
 };
 struct Pickup {
     float x=0.0f, z=0.0f;
