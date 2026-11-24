@@ -3,6 +3,8 @@
 #include <algorithm>
 
 namespace apocalypse {
+static void updateProjectiles(std::vector<Projectile>& shots,std::vector<Zombie>& zombies,
+                              std::vector<Impact>& impacts,float dt,int& money);
 static float distance2(float ax,float az,float bx,float bz) {
     const float dx=ax-bx, dz=az-bz;
     return dx*dx+dz*dz;
@@ -25,7 +27,8 @@ void SurvivalSystem::reset() {
 void SurvivalSystem::update(float dt,float px,float pz) {
     lastPlayerX=px; lastPlayerZ=pz;
     dt=std::max(0.0f,std::min(dt,0.05f));
-    pulseCooldown=std::max(0.0f,pulseCooldown-dt);\n    updateProjectiles(projectileList,zombieList,impactList,dt,moneyCount);
+    pulseCooldown=std::max(0.0f,pulseCooldown-dt);
+    updateProjectiles(projectileList,zombieList,impactList,dt,moneyCount);
     for(auto it=impactList.begin();it!=impactList.end();){it->life-=dt;if(it->life<=0.0f)it=impactList.erase(it);else ++it;}
     for(auto& z:zombieList) {
         if(z.state==2) continue;
