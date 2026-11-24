@@ -94,3 +94,10 @@ O APOCALYPSE deve adaptar os padrões adequados, sem copiar contas, loja, regras
 - Incremento enviado: folhagem, postes, pneus e silhuetas de sobrevivente/zumbis passaram a usar malhas orgânicas trianguladas, reduzindo o aspecto de blocos.
 - Colisão inicial enviada: edifícios registram volumes físicos AABB; movimento do jogador resolve os eixos separadamente e permite deslizar pelas fachadas. Ainda faltam colisões para vegetação, carros, cercas, destroços e interiores.
 - Próximos incrementos: pipeline de assets com UVs e texturas reais, materiais, chunks/streaming e expansão de interiores; depois colisões completas e otimização de memória.
+
+
+## Incremento de renderização com UV e materiais — 24/11/2026
+- Enviado ao renderer: atributos de UV e ID de material no vértice; shader com seleção de textura por material; UV tiling em terreno e superfícies; três mapas iniciais tileáveis gerados em memória (grama/vegetação, concreto e asfalto), com mipmaps.
+- Os padrões iniciais são 64 × 64 e não aumentam o tamanho do APK, pois são gerados na inicialização. Eles validam o caminho de amostragem, mas não são texturas fotográficas ou de alta resolução.
+- Ainda pendentes para cumprir o alvo artístico: importador de modelos OBJ/glTF com buffers de índices/normais/UVs, carregamento de imagens reais de assets, materiais PBR (albedo, normal, roughness/metallic), modelos arquitetônicos de qualidade e revisão visual no aparelho.
+- Build CI deste incremento: aguardando. Teste no Redmi 12: pendente.
