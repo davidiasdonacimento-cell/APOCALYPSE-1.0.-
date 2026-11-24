@@ -6,7 +6,7 @@
 namespace apocalypse::assets {
 struct ModelVertex { float position[3]; float normal[3]; float uv[2]; };
 struct PbrMaterial {
-    std::string name, albedoPath, normalPath, metallicRoughnessPath;
+    std::string name, albedoPath, normalPath, roughnessPath, metallicPath, metallicRoughnessPath;
     float baseColor[4]={1,1,1,1};
     float metallic=0.0f, roughness=1.0f;
 };
