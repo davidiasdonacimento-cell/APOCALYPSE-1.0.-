@@ -19,6 +19,8 @@ public:
     void reset();
     void update(float dt, float playerX, float playerZ);
     bool usePulse(float playerX, float playerZ);
+    bool purchase(int item);
+    int money() const { return moneyCount; }
     int health() const { return playerHealth; }
     int water() const { return waterCount; }
     int food() const { return foodCount; }
@@ -29,6 +31,9 @@ public:
     const std::vector<Pickup>& pickups() const { return pickupList; }
 private:
     int playerHealth=100;
+    int moneyCount=0;
+    int pulseDamage=1;
+    int armorLevel=0;
     int waterCount=0, foodCount=0, materialCount=0, medkitCount=0;
     float pulseCooldown=0.0f;
     std::vector<Zombie> zombieList;
