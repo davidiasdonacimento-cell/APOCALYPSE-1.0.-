@@ -22,6 +22,7 @@ GLuint surfaceTextures[3]={0,0,0};
 GLint vertexCount=0, playerVertexCount=0;
 int surfaceWidth=1, surfaceHeight=1;
 float playerX=0.0f, playerZ=0.0f, moveX=0.0f, moveZ=0.0f;
+bool playerWasMoving=false;
 std::vector<Vertex> world, playerMesh;
 struct WorldCollider { float minX, maxX, minZ, maxZ; };
 std::vector<WorldCollider> worldColliders;
@@ -352,15 +353,16 @@ void movePlayerWithCollision(float dx,float dz){
     const float nextZ=fmaxf(-108.0f,fminf(108.0f,playerZ+dz));
     if(!collidesWithWorld(playerX,nextZ)) playerZ=nextZ;
 }
-void addPlayerModel(){
+void addPlayerModel(float gait=0.0f){
     playerMesh.clear();
+    const float stride=sinf(gait);
     // Sobrevivente: botas reforçadas, calça, joelheiras e jaqueta em camadas.
-    ellipsoid(playerMesh,-0.13f,0.13f,-0.035f,0.16f,0.12f,0.24f,0.075f,0.085f,0.09f);
-    ellipsoid(playerMesh, 0.13f,0.13f,-0.035f,0.16f,0.12f,0.24f,0.075f,0.085f,0.09f);
-    taperedCylinder(playerMesh,-0.13f,0.24f,0.0f,0.105f,0.12f,0.31f,0.20f,0.24f,0.19f);
-    taperedCylinder(playerMesh, 0.13f,0.24f,0.0f,0.105f,0.12f,0.31f,0.20f,0.24f,0.19f);
-    ellipsoid(playerMesh,-0.13f,0.48f,0.0f,0.13f,0.09f,0.13f,0.12f,0.16f,0.13f);
-    ellipsoid(playerMesh, 0.13f,0.48f,0.0f,0.13f,0.09f,0.13f,0.12f,0.16f,0.13f);
+    ellipsoid(playerMesh,-0.13f,0.13f,-0.035f+stride*0.10f,0.16f,0.12f,0.24f,0.075f,0.085f,0.09f);
+    ellipsoid(playerMesh, 0.13f,0.13f,-0.035f-stride*0.10f,0.16f,0.12f,0.24f,0.075f,0.085f,0.09f);
+    taperedCylinder(playerMesh,-0.13f,0.24f,stride*0.045f,0.105f,0.12f,0.31f,0.20f,0.24f,0.19f);
+    taperedCylinder(playerMesh, 0.13f,0.24f,-stride*0.045f,0.105f,0.12f,0.31f,0.20f,0.24f,0.19f);
+    ellipsoid(playerMesh,-0.13f,0.48f,stride*0.06f,0.13f,0.09f,0.13f,0.12f,0.16f,0.13f);
+    ellipsoid(playerMesh, 0.13f,0.48f,-stride*0.06f,0.13f,0.09f,0.13f,0.12f,0.16f,0.13f);
     ellipsoid(playerMesh,0.0f,0.76f,0.0f,0.29f,0.20f,0.19f,0.15f,0.19f,0.15f,12,16);
     ellipsoid(playerMesh,0.0f,0.91f,0.0f,0.32f,0.28f,0.21f,0.22f,0.29f,0.22f,14,18);
     // Colete, bolsos, zíper e alças frontais.
@@ -370,12 +372,12 @@ void addPlayerModel(){
     ellipsoid(playerMesh,0.0f,0.91f,-0.232f,0.012f,0.19f,0.012f,0.58f,0.53f,0.36f,6,8);
     // Mochila compacta visível por trás do ombro.
     ellipsoid(playerMesh,0.0f,0.92f,0.205f,0.22f,0.29f,0.13f,0.11f,0.15f,0.13f,10,12);
-    ellipsoid(playerMesh,-0.37f,0.88f,0.0f,0.12f,0.20f,0.13f,0.19f,0.25f,0.19f);
-    ellipsoid(playerMesh, 0.37f,0.88f,0.0f,0.12f,0.20f,0.13f,0.19f,0.25f,0.19f);
-    taperedCylinder(playerMesh,-0.38f,0.52f,0.0f,0.085f,0.075f,0.29f,0.20f,0.25f,0.19f);
-    taperedCylinder(playerMesh, 0.38f,0.52f,0.0f,0.085f,0.075f,0.29f,0.20f,0.25f,0.19f);
-    ellipsoid(playerMesh,-0.38f,0.48f,-0.01f,0.09f,0.08f,0.09f,0.12f,0.13f,0.11f);
-    ellipsoid(playerMesh, 0.38f,0.48f,-0.01f,0.09f,0.08f,0.09f,0.12f,0.13f,0.11f);
+    ellipsoid(playerMesh,-0.37f,0.88f,stride*0.045f,0.12f,0.20f,0.13f,0.19f,0.25f,0.19f);
+    ellipsoid(playerMesh, 0.37f,0.88f,-stride*0.045f,0.12f,0.20f,0.13f,0.19f,0.25f,0.19f);
+    taperedCylinder(playerMesh,-0.38f,0.52f,-stride*0.06f,0.085f,0.075f,0.29f,0.20f,0.25f,0.19f);
+    taperedCylinder(playerMesh, 0.38f,0.52f,stride*0.06f,0.085f,0.075f,0.29f,0.20f,0.25f,0.19f);
+    ellipsoid(playerMesh,-0.38f,0.48f,-0.01f-stride*0.08f,0.09f,0.08f,0.09f,0.12f,0.13f,0.11f);
+    ellipsoid(playerMesh, 0.38f,0.48f,-0.01f+stride*0.08f,0.09f,0.08f,0.09f,0.12f,0.13f,0.11f);
     ellipsoid(playerMesh,0.0f,1.22f,0.0f,0.17f,0.20f,0.16f,0.70f,0.53f,0.39f,12,16);
     // Cabelo, orelhas e traços do rosto voltados para a direção de avanço.
     ellipsoid(playerMesh,0.0f,1.36f,0.015f,0.18f,0.10f,0.17f,0.13f,0.10f,0.075f,10,14);
@@ -505,6 +507,14 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
         movePlayerWithCollision(moveX*step,moveZ*step);
     }
     survival.update(dt,playerX,playerZ);
+    const bool playerMoving=length>0.01f;
+    if(playerMoving||playerWasMoving){
+        addPlayerModel(playerMoving?(float)now*8.0f:0.0f);
+        glBindBuffer(GL_ARRAY_BUFFER,playerBuffer);
+        glBufferData(GL_ARRAY_BUFFER,(GLsizeiptr)(playerMesh.size()*sizeof(Vertex)),playerMesh.data(),GL_DYNAMIC_DRAW);
+        playerVertexCount=(GLint)playerMesh.size();
+        playerWasMoving=playerMoving;
+    }
     glUseProgram(program);
     const char* texNames[3]={"uGrass","uConcrete","uAsphalt"};
     for(int i=0;i<3;i++){glActiveTexture(GL_TEXTURE0+i);glBindTexture(GL_TEXTURE_2D,surfaceTextures[i]);glUniform1i(glGetUniformLocation(program,texNames[i]),i);}
