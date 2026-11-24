@@ -576,11 +576,23 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativePurchase(J
     std::lock_guard<std::mutex> lock(survivalMutex);
     return survival.purchase((int)item)?JNI_TRUE:JNI_FALSE;
 }
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeSelectWeapon(JNIEnv*,jclass,jint weapon){
+    std::lock_guard<std::mutex> lock(survivalMutex);
+    return survival.selectWeapon((int)weapon)?JNI_TRUE:JNI_FALSE;
+}
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeGetHud(JNIEnv* env,jclass){
-    char text[180];
+    char text[256];
     std::lock_guard<std::mutex> lock(survivalMutex);
-    std::snprintf(text,sizeof(text),"VIDA %d/100   ZUMBIS %d   $ %d\nAGUA %d  COMIDA %d  MATERIAIS %d  KITS %d",
-        survival.health(),survival.aliveZombies(),survival.money(),survival.water(),survival.food(),survival.materials(),survival.medkits());
+    const char* weaponName="PULSO";
+    if(survival.weapon()==1) weaponName="SHURIKEN";
+    else if(survival.weapon()==2) weaponName="RIFLE";
+    else if(survival.weapon()==3) weaponName="ESCOPETA";
+    const int ammo=survival.weaponAmmo();
+    if(ammo>=0) std::snprintf(text,sizeof(text),"ONDA %d   VIDA %d/100   ZUMBIS %d   $ %d\nARMA %s: %d   AGUA %d  COMIDA %d  MATERIAIS %d  KITS %d",
+        survival.wave(),survival.health(),survival.aliveZombies(),survival.money(),weaponName,ammo,survival.water(),survival.food(),survival.materials(),survival.medkits());
+    else std::snprintf(text,sizeof(text),"ONDA %d   VIDA %d/100   ZUMBIS %d   $ %d\nARMA %s   AGUA %d  COMIDA %d  MATERIAIS %d  KITS %d",
+        survival.wave(),survival.health(),survival.aliveZombies(),survival.money(),weaponName,survival.water(),survival.food(),survival.materials(),survival.medkits());
     return env->NewStringUTF(text);
 }
