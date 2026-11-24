@@ -3,16 +3,19 @@
 #include <android/log.h>
 #include <vector>
 #include <cmath>
+#include <time.h>
+static double androidGetCurrentTimeNanos(){struct timespec t{};clock_gettime(CLOCK_MONOTONIC,&t);return (double)t.tv_sec*1000000000.0+(double)t.tv_nsec;}
 
 #define LOG_TAG "APOCALYPSE_ENGINE"
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 namespace {
 struct Vertex { float x,y,z,r,g,b; };
-GLuint program=0, vertexBuffer=0;
-GLint vertexCount=0;
+GLuint program=0, vertexBuffer=0, playerBuffer=0;
+GLint vertexCount=0, playerVertexCount=0;
 int surfaceWidth=1, surfaceHeight=1;
-std::vector<Vertex> world;
+float playerX=0.0f, playerZ=0.0f, moveX=0.0f, moveZ=0.0f;
+std::vector<Vertex> world, playerMesh;
 
 Vertex v(float x,float y,float z,float r,float g,float b){return {x,y,z,r,g,b};}
 void triangle(Vertex a,Vertex b,Vertex c){world.push_back(a);world.push_back(b);world.push_back(c);}
@@ -102,6 +105,27 @@ void buildCity(){
         building(tx,tz,0.65f,0.65f,1.6f,0.12f,0.30f,0.14f);
     }
 }
+
+void addPlayerModel(){
+    playerMesh.clear();
+    // Stylized survivor: boots/legs, torso, arms and head.
+    auto cube=[&](float x,float y,float z,float w,float h,float d,float r,float g,float b){
+        float x2=x+w,y2=y+h,z2=z+d;
+        Vertex a=v(x,y,z,r*.65f,g*.65f,b*.65f),b0=v(x2,y,z,r*.65f,g*.65f,b*.65f);
+        Vertex c=v(x2,y,z2,r*.65f,g*.65f,b*.65f),d0=v(x,y,z2,r*.65f,g*.65f,b*.65f);
+        Vertex A=v(x,y2,z,r,g,b),B=v(x2,y2,z,r,g,b),C=v(x2,y2,z2,r*.9f,g*.9f,b*.9f),D=v(x,y2,z2,r*.9f,g*.9f,b*.9f);
+        auto tri=[&](Vertex p,Vertex q,Vertex t){playerMesh.push_back(p);playerMesh.push_back(q);playerMesh.push_back(t);};
+        auto quad=[&](Vertex p,Vertex q,Vertex t,Vertex u){tri(p,q,t);tri(p,t,u);};
+        quad(A,B,C,D);quad(a,b0,B,A);quad(b0,c,C,B);quad(c,d0,D,C);quad(d0,a,A,D);
+    };
+    cube(-0.22f,0.05f,-0.16f,0.17f,0.42f,0.30f,0.18f,0.20f,0.24f);
+    cube(0.05f,0.05f,-0.16f,0.17f,0.42f,0.30f,0.18f,0.20f,0.24f);
+    cube(-0.25f,0.47f,-0.19f,0.50f,0.55f,0.38f,0.20f,0.34f,0.29f);
+    cube(-0.34f,0.48f,-0.15f,0.12f,0.48f,0.27f,0.72f,0.56f,0.39f);
+    cube(0.22f,0.48f,-0.15f,0.12f,0.48f,0.27f,0.72f,0.56f,0.39f);
+    cube(-0.16f,1.05f,-0.13f,0.32f,0.32f,0.30f,0.72f,0.56f,0.39f);
+}
+
 GLuint compileShader(GLenum type,const char* src){
     GLuint s=glCreateShader(type);glShaderSource(s,1,&src,nullptr);glCompileShader(s);
     GLint ok=GL_FALSE;glGetShaderiv(s,GL_COMPILE_STATUS,&ok);
@@ -111,7 +135,7 @@ GLuint compileShader(GLenum type,const char* src){
 }
 extern "C" JNIEXPORT void JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeInit(JNIEnv*,jclass){
-    const char* vs="#version 300 es\nlayout(location=0) in vec3 aPos; layout(location=1) in vec3 aColor; out vec3 color; void main(){float sx=(aPos.x-aPos.z)*0.032;float sy=(aPos.x+aPos.z)*0.018-aPos.y*0.075;float depth=clamp((aPos.x+aPos.z)*0.0008-aPos.y*0.001,-0.08,0.08);gl_Position=vec4(sx,sy,depth,1.0);color=aColor;}";
+    const char* vs="#version 300 es\nlayout(location=0) in vec3 aPos; layout(location=1) in vec3 aColor; uniform vec2 uCamera; uniform vec2 uOffset; uniform float uAspect; out vec3 color; void main(){vec3 p=aPos;p.x+=uOffset.x-uCamera.x;p.z+=uOffset.y-uCamera.y;float sx=(p.x-p.z)*0.032;float sy=(p.x+p.z)*0.018-p.y*0.075;sx*=min(uAspect,1.0);sy*=min(1.0,1.0/uAspect);float depth=clamp((p.x+p.z)*0.0008-p.y*0.001,-0.08,0.08);gl_Position=vec4(sx,sy,depth,1.0);color=aColor;}";
     const char* fs="#version 300 es\nprecision mediump float;in vec3 color;out vec4 fragColor;void main(){fragColor=vec4(color,1.0);}";
     GLuint a=compileShader(GL_VERTEX_SHADER,vs),b=compileShader(GL_FRAGMENT_SHADER,fs);
     if(!a||!b)return;
@@ -123,8 +147,14 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeInit(JNIEn
     glGenBuffers(1,&vertexBuffer);glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER,(GLsizeiptr)(world.size()*sizeof(Vertex)),world.data(),GL_STATIC_DRAW);
     vertexCount=(GLint)world.size();
+    addPlayerModel();
+    glGenBuffers(1,&playerBuffer);glBindBuffer(GL_ARRAY_BUFFER,playerBuffer);
+    glBufferData(GL_ARRAY_BUFFER,(GLsizeiptr)(playerMesh.size()*sizeof(Vertex)),playerMesh.data(),GL_STATIC_DRAW);
+    playerVertexCount=(GLint)playerMesh.size();
     glEnable(GL_DEPTH_TEST);glDepthFunc(GL_LEQUAL);
 }
+extern "C" JNIEXPORT void JNICALL
+Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeSetMove(JNIEnv*,jclass,jfloat x,jfloat z){moveX=x;moveZ=z;}
 extern "C" JNIEXPORT void JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeResize(JNIEnv*,jclass,jint w,jint h){
     surfaceWidth=w>0?w:1;surfaceHeight=h>0?h:1;glViewport(0,0,surfaceWidth,surfaceHeight);
@@ -134,9 +164,28 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     glViewport(0,0,surfaceWidth,surfaceHeight);
     glClearColor(0.035f,0.055f,0.075f,1.0f);glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     if(!program||!vertexBuffer||vertexCount<=0)return;
-    glUseProgram(program);glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer);
+    static double lastTime=0.0;
+    double now=(double)androidGetCurrentTimeNanos()/1000000000.0;
+    float dt=lastTime>0.0?(float)(now-lastTime):0.016f;lastTime=now;
+    if(dt>0.05f)dt=0.05f;
+    float length=sqrtf(moveX*moveX+moveZ*moveZ);
+    if(length>0.01f){playerX+=(moveX/length)*3.2f*dt;playerZ+=(moveZ/length)*3.2f*dt;}
+    if(playerX < -25.0f)playerX=-25.0f;if(playerX>25.0f)playerX=25.0f;
+    if(playerZ < -25.0f)playerZ=-25.0f;if(playerZ>25.0f)playerZ=25.0f;
+    glUseProgram(program);
+    GLint cam=glGetUniformLocation(program,"uCamera");
+    GLint off=glGetUniformLocation(program,"uOffset");
+    GLint asp=glGetUniformLocation(program,"uAspect");
+    float aspect=(float)surfaceWidth/(float)surfaceHeight;
+    glUniform2f(cam,playerX,playerZ);glUniform2f(off,0.0f,0.0f);glUniform1f(asp,aspect);
+    glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer);
     glEnableVertexAttribArray(0);glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)0);
     glEnableVertexAttribArray(1);glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(3*sizeof(float)));
     glDrawArrays(GL_TRIANGLES,0,vertexCount);
+    glUniform2f(off,playerX,playerZ);
+    glBindBuffer(GL_ARRAY_BUFFER,playerBuffer);
+    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)0);
+    glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(3*sizeof(float)));
+    glDrawArrays(GL_TRIANGLES,0,playerVertexCount);
     glDisableVertexAttribArray(0);glDisableVertexAttribArray(1);
 }
