@@ -61,7 +61,7 @@ void bone(Vec a,Vec b,float radius,float r,float g,float bl){capsule(a,b,radius,
 
 // Lightweight procedural skeleton: root -> spine -> neck/head; shoulders -> elbows -> hands;
 // hips -> knees -> feet. The pose is evaluated each frame and drives the skinned joint positions.
-void buildCharacter(float t){
+void buildCharacter(float t,bool showPedestal=true){
     mesh.clear();
     float idle=sinf(t*2.0f);
     float walk=animationMode==3? sinf(t*7.0f):0.0f;
@@ -72,7 +72,7 @@ void buildCharacter(float t){
     Vec root{0,0.10f+bodyY,0};
 
     // Display plinth.
-    sphere({0,0.06f,0},{0.82f,0.08f,0.62f},0.08f,0.18f,0.27f,7,20);
+    if(showPedestal) sphere({0,0.06f,0},{0.82f,0.08f,0.62f},0.08f,0.18f,0.27f,7,20);
 
     // Leg chains.
     Vec hipL=add(root,{-0.16f,0.78f,0}),hipR=add(root,{0.16f,0.78f,0});
@@ -176,6 +176,32 @@ void draw(float dt){
     glDisableVertexAttribArray(0);glDisableVertexAttribArray(1);
 }
 }
+
+namespace apocalypse {
+void initializeVerityCompanion(){ init(); }
+void renderVerityCompanion(const float* viewProjection,float x,float z){
+    if(!program) return;
+    elapsed+=1.0f/60.0f;
+    const int previousMode=animationMode;
+    animationMode=3;
+    buildCharacter(elapsed,false);
+    animationMode=previousMode;
+    if(!buffer) glGenBuffers(1,&buffer);
+    glBindBuffer(GL_ARRAY_BUFFER,buffer);
+    glBufferData(GL_ARRAY_BUFFER,mesh.size()*sizeof(V),mesh.data(),GL_DYNAMIC_DRAW);
+    float model[16],mvp[16]; identity(model);
+    model[12]=x; model[13]=0.0f; model[14]=z;
+    multiply(mvp,viewProjection,model);
+    glUseProgram(program);
+    glUniformMatrix4fv(mvpLoc,1,GL_FALSE,mvp);
+    glEnableVertexAttribArray(0); glEnableVertexAttribArray(1);
+    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(V),(void*)0);
+    glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(V),(void*)(3*sizeof(float)));
+    glDrawArrays(GL_TRIANGLES,0,(GLsizei)mesh.size());
+    glDisableVertexAttribArray(0); glDisableVertexAttribArray(1);
+}
+}
+
 extern "C" JNIEXPORT void JNICALL
 Java_com_apocalypse_game_Verity3DActivity_00024Renderer_nativeInit(JNIEnv*,jclass){init();}
 extern "C" JNIEXPORT void JNICALL
