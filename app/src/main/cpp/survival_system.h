@@ -9,6 +9,12 @@ struct Zombie {
     float attackCooldown=0.0f;
     float patrolPhase=0.0f;
 };
+struct Projectile {
+    float x=0.0f, z=0.0f;
+    float dirX=0.0f, dirZ=-1.0f;
+    float travelled=0.0f, maxRange=0.0f, speed=0.0f;
+    int damage=1, weapon=0;
+};
 struct Pickup {
     float x=0.0f, z=0.0f;
     int type=0; // 0 water, 1 food, 2 materials, 3 medkit
@@ -18,7 +24,7 @@ class SurvivalSystem {
 public:
     void reset();
     void update(float dt, float playerX, float playerZ);
-    bool usePulse(float playerX, float playerZ);
+    bool usePulse(float playerX, float playerZ);\n    bool fireWeapon(float playerX, float playerZ, float dirX, float dirZ);
     bool purchase(int item);
     bool selectWeapon(int weapon);
     int money() const { return moneyCount; }
@@ -32,7 +38,7 @@ public:
     int medkits() const { return medkitCount; }
     int aliveZombies() const;
     const std::vector<Zombie>& zombies() const { return zombieList; }
-    const std::vector<Pickup>& pickups() const { return pickupList; }
+    const std::vector<Pickup>& pickups() const { return pickupList; }\n    const std::vector<Projectile>& projectiles() const { return projectileList; }
 private:
     int playerHealth=100;
     int moneyCount=0;
@@ -47,6 +53,6 @@ private:
     int waterCount=0, foodCount=0, materialCount=0, medkitCount=0;
     float pulseCooldown=0.0f;
     std::vector<Zombie> zombieList;
-    std::vector<Pickup> pickupList;
+    std::vector<Pickup> pickupList;\n    std::vector<Projectile> projectileList;
 };
 }
