@@ -84,13 +84,14 @@ void addTerrain(){
         float h3=terrainHeight(x+step,z+step),h4=terrainHeight(x,z+step);
         float tint=((ix*7+iz*11)%9)*0.003f;
         float r=0.15f+tint,g=0.205f+tint,b=0.145f+tint;
-        quad(v(x,h1,z,r,g,b),v(x+step,h2,z,r,g,b),
-             v(x+step,h3,z+step,r*0.98f,g*0.98f,b),
-             v(x,h4,z+step,r*0.96f,g*0.96f,b));
+        quad(vt(x,h1,z,r,g,b,0,0,0),vt(x+step,h2,z,r,g,b,step,0,0),
+             vt(x+step,h3,z+step,r*0.98f,g*0.98f,b,step,step,0),
+             vt(x,h4,z+step,r*0.96f,g*0.96f,b,0,step,0));
     }
 }
 void ground(float x,float z,float w,float d,float r,float g,float b,float y=0.105f){
-    quad(v(x,y,z,r,g,b),v(x+w,y,z,r,g,b),v(x+w,y,z+d,r,g,b),v(x,y,z+d,r,g,b));
+    float m=(g>r*1.18f)?0.0f:((r<0.20f&&g<0.23f)?2.0f:1.0f); float t=0.65f;
+    quad(vt(x,y,z,r,g,b,0,0,m),vt(x+w,y,z,r,g,b,w*t,0,m),vt(x+w,y,z+d,r,g,b,w*t,d*t,m),vt(x,y,z+d,r,g,b,0,d*t,m));
 }
 void sidewalkH(float x,float z,float w,float d){
     ground(x,z,w,d,0.39f,0.39f,0.35f,0.125f);
@@ -398,8 +399,8 @@ GLuint compileShader(GLenum type,const char* src){
 }
 extern "C" JNIEXPORT void JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeInit(JNIEnv*,jclass){
-    const char* vs="#version 300 es\nlayout(location=0) in vec3 aPos; layout(location=1) in vec3 aColor; uniform mat4 uMVP; out vec3 color; out vec3 worldPosition; void main(){worldPosition=aPos;gl_Position=uMVP*vec4(aPos,1.0);color=aColor;}";
-    const char* fs="#version 300 es\nprecision mediump float;in vec3 color;in vec3 worldPosition;out vec4 fragColor;void main(){vec3 normal=normalize(cross(dFdx(worldPosition),dFdy(worldPosition)));vec3 lightDir=normalize(vec3(-0.35,0.82,0.44));float diffuse=0.46+0.54*abs(dot(normal,lightDir));float distanceFog=clamp((gl_FragCoord.z-0.90)*2.8,0.0,0.20);vec3 lit=color*diffuse;vec3 fog=vec3(0.10,0.14,0.16);fragColor=vec4(mix(lit,fog,distanceFog),1.0);}";
+    const char* vs="#version 300 es\nlayout(location=0) in vec3 aPos; layout(location=1) in vec3 aColor; layout(location=2) in vec2 aUV; layout(location=3) in float aMaterial; uniform mat4 uMVP; out vec3 color; out vec3 worldPosition; out vec2 uv; flat out int materialId; void main(){worldPosition=aPos;gl_Position=uMVP*vec4(aPos,1.0);color=aColor;uv=aUV;materialId=int(aMaterial+0.5);}";
+    const char* fs="#version 300 es\nprecision mediump float;in vec3 color;in vec3 worldPosition;in vec2 uv;flat in int materialId;uniform sampler2D uGrass;uniform sampler2D uConcrete;uniform sampler2D uAsphalt;out vec4 fragColor;void main(){vec3 texel=vec3(1.0);if(materialId==0)texel=texture(uGrass,uv).rgb;else if(materialId==1)texel=texture(uConcrete,uv).rgb;else if(materialId==2)texel=texture(uAsphalt,uv).rgb;vec3 normal=normalize(cross(dFdx(worldPosition),dFdy(worldPosition)));vec3 lightDir=normalize(vec3(-0.35,0.82,0.44));float diffuse=0.46+0.54*abs(dot(normal,lightDir));float distanceFog=clamp((gl_FragCoord.z-0.90)*2.8,0.0,0.20);vec3 lit=color*texel*diffuse;vec3 fog=vec3(0.10,0.14,0.16);fragColor=vec4(mix(lit,fog,distanceFog),1.0);}";
     GLuint a=compileShader(GL_VERTEX_SHADER,vs),b=compileShader(GL_FRAGMENT_SHADER,fs);
     if(!a||!b)return;
     program=glCreateProgram();glAttachShader(program,a);glAttachShader(program,b);glLinkProgram(program);
@@ -473,6 +474,8 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     glEnableVertexAttribArray(1);glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(3*sizeof(float)));
     glEnableVertexAttribArray(2);glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(6*sizeof(float)));
     glEnableVertexAttribArray(3);glVertexAttribPointer(3,1,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(8*sizeof(float)));
+    glEnableVertexAttribArray(2);glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(6*sizeof(float)));
+    glEnableVertexAttribArray(3);glVertexAttribPointer(3,1,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(8*sizeof(float)));
     glDrawArrays(GL_TRIANGLES,0,vertexCount);
     std::vector<Vertex> dynamicMesh;
     buildSurvivalMesh(dynamicMesh);
@@ -492,7 +495,7 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)0);
     glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(3*sizeof(float)));
     glDrawArrays(GL_TRIANGLES,0,playerVertexCount);
-    glDisableVertexAttribArray(0);glDisableVertexAttribArray(1);glDisableVertexAttribArray(2);glDisableVertexAttribArray(3);
+    glDisableVertexAttribArray(0);glDisableVertexAttribArray(1);glDisableVertexAttribArray(2);glDisableVertexAttribArray(3);glDisableVertexAttribArray(2);glDisableVertexAttribArray(3);
 }
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeAttack(JNIEnv*,jclass){
