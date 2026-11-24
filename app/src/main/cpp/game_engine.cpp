@@ -6,6 +6,7 @@
 #include <time.h>
 #include <cstdio>
 #include "survival_system.h"
+#include "math3d.h"
 static double androidGetCurrentTimeNanos(){struct timespec t{};clock_gettime(CLOCK_MONOTONIC,&t);return (double)t.tv_sec*1000000000.0+(double)t.tv_nsec;}
 
 #define LOG_TAG "APOCALYPSE_ENGINE"
@@ -165,8 +166,8 @@ GLuint compileShader(GLenum type,const char* src){
 }
 extern "C" JNIEXPORT void JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeInit(JNIEnv*,jclass){
-    const char* vs="#version 300 es\nlayout(location=0) in vec3 aPos; layout(location=1) in vec3 aColor; uniform vec2 uCamera; uniform vec2 uOffset; uniform float uAspect; out vec3 color; void main(){vec3 p=aPos;p.x+=uOffset.x-uCamera.x;p.z+=uOffset.y-uCamera.y;float sx=(p.x-p.z)*0.032;float sy=(p.x+p.z)*0.018-p.y*0.075;sx*=min(uAspect,1.0);sy*=min(1.0,1.0/uAspect);float depth=clamp((p.x+p.z)*0.0008-p.y*0.001,-0.08,0.08);gl_Position=vec4(sx,sy,depth,1.0);color=aColor;}";
-    const char* fs="#version 300 es\nprecision mediump float;in vec3 color;out vec4 fragColor;void main(){fragColor=vec4(color,1.0);}";
+    const char* vs="#version 300 es\nlayout(location=0) in vec3 aPos; layout(location=1) in vec3 aColor; uniform mat4 uMVP; out vec3 color; out vec3 worldPosition; void main(){worldPosition=aPos;gl_Position=uMVP*vec4(aPos,1.0);color=aColor;}";
+    const char* fs="#version 300 es\nprecision mediump float;in vec3 color;in vec3 worldPosition;out vec4 fragColor;void main(){vec3 normal=normalize(cross(dFdx(worldPosition),dFdy(worldPosition)));vec3 lightDir=normalize(vec3(-0.35,0.82,0.44));float diffuse=0.46+0.54*abs(dot(normal,lightDir));float distanceFog=clamp((gl_FragCoord.z-0.90)*2.8,0.0,0.20);vec3 lit=color*diffuse;vec3 fog=vec3(0.10,0.14,0.16);fragColor=vec4(mix(lit,fog,distanceFog),1.0);}";
     GLuint a=compileShader(GL_VERTEX_SHADER,vs),b=compileShader(GL_FRAGMENT_SHADER,fs);
     if(!a||!b)return;
     program=glCreateProgram();glAttachShader(program,a);glAttachShader(program,b);glLinkProgram(program);
@@ -205,11 +206,15 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     if(playerZ < -25.0f)playerZ=-25.0f;if(playerZ>25.0f)playerZ=25.0f;
     survival.update(dt,playerX,playerZ);
     glUseProgram(program);
-    GLint cam=glGetUniformLocation(program,"uCamera");
-    GLint off=glGetUniformLocation(program,"uOffset");
-    GLint asp=glGetUniformLocation(program,"uAspect");
-    float aspect=(float)surfaceWidth/(float)surfaceHeight;
-    glUniform2f(cam,playerX,playerZ);glUniform2f(off,0.0f,0.0f);glUniform1f(asp,aspect);
+    const float aspect=(float)surfaceWidth/(float)surfaceHeight;
+    const apocalypse::Mat4 projection=apocalypse::perspective(58.0f*3.14159265f/180.0f,aspect,0.10f,110.0f);
+    const apocalypse::Vec3 eye{playerX,7.5f,playerZ+9.5f};
+    const apocalypse::Vec3 target{playerX,0.75f,playerZ-0.5f};
+    const apocalypse::Mat4 view=apocalypse::lookAt(eye,target,{0.0f,1.0f,0.0f});
+    const apocalypse::Mat4 viewProjection=apocalypse::multiply(projection,view);
+    const GLint mvpLocation=glGetUniformLocation(program,"uMVP");
+    const apocalypse::Mat4 identity=apocalypse::identity();
+    glUniformMatrix4fv(mvpLocation,1,GL_FALSE,viewProjection.m);
     glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer);
     glEnableVertexAttribArray(0);glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)0);
     glEnableVertexAttribArray(1);glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(3*sizeof(float)));
@@ -218,14 +223,16 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     buildSurvivalMesh(dynamicMesh);
     if(!dynamicMesh.empty()){
         if(!survivalBuffer) glGenBuffers(1,&survivalBuffer);
-        glUniform2f(off,0.0f,0.0f);
+        glUniformMatrix4fv(mvpLocation,1,GL_FALSE,viewProjection.m);
         glBindBuffer(GL_ARRAY_BUFFER,survivalBuffer);
         glBufferData(GL_ARRAY_BUFFER,(GLsizeiptr)(dynamicMesh.size()*sizeof(Vertex)),dynamicMesh.data(),GL_DYNAMIC_DRAW);
         glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)0);
         glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(3*sizeof(float)));
         glDrawArrays(GL_TRIANGLES,0,(GLsizei)dynamicMesh.size());
     }
-    glUniform2f(off,playerX,playerZ);
+    const apocalypse::Mat4 playerModel=apocalypse::translation(playerX,0.0f,playerZ);
+    const apocalypse::Mat4 playerMvp=apocalypse::multiply(viewProjection,playerModel);
+    glUniformMatrix4fv(mvpLocation,1,GL_FALSE,playerMvp.m);
     glBindBuffer(GL_ARRAY_BUFFER,playerBuffer);
     glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)0);
     glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(3*sizeof(float)));
