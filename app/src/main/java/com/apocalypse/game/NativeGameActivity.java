@@ -151,6 +151,46 @@ public final class NativeGameActivity extends Activity {
             shopPanel.setVisibility(shopPanel.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);
         });
 
+        Button buyShuriken = new Button(this);
+        buyShuriken.setText("DESBLOQUEAR SHURIKEN • $100");
+        shopPanel.addView(buyShuriken);
+        buyShuriken.setOnClickListener(v -> buyItem(3,"Shuriken desbloqueado!"));
+        Button buyRifle = new Button(this);
+        buyRifle.setText("DESBLOQUEAR RIFLE • $260");
+        shopPanel.addView(buyRifle);
+        buyRifle.setOnClickListener(v -> buyItem(4,"Rifle desbloqueado!"));
+        Button buyShotgun = new Button(this);
+        buyShotgun.setText("DESBLOQUEAR ESCOPETA • $220");
+        shopPanel.addView(buyShotgun);
+        buyShotgun.setOnClickListener(v -> buyItem(5,"Escopeta desbloqueada!"));
+        Button ammoShuriken = new Button(this);
+        ammoShuriken.setText("12 SHURIKENS • $45");
+        shopPanel.addView(ammoShuriken);
+        ammoShuriken.setOnClickListener(v -> buyItem(6,"Shurikens comprados!"));
+        Button ammoRifle = new Button(this);
+        ammoRifle.setText("30 MUNIÇÕES • $80");
+        shopPanel.addView(ammoRifle);
+        ammoRifle.setOnClickListener(v -> buyItem(7,"Munição comprada!"));
+        Button ammoShotgun = new Button(this);
+        ammoShotgun.setText("12 CARTUCHOS • $70");
+        shopPanel.addView(ammoShotgun);
+        ammoShotgun.setOnClickListener(v -> buyItem(8,"Cartuchos comprados!"));
+        Button selectPulse = new Button(this);
+        selectPulse.setText("EQUIPAR PULSO");
+        shopPanel.addView(selectPulse);
+        selectPulse.setOnClickListener(v -> selectWeapon(0));
+        Button selectShuriken = new Button(this);
+        selectShuriken.setText("EQUIPAR SHURIKEN");
+        shopPanel.addView(selectShuriken);
+        selectShuriken.setOnClickListener(v -> selectWeapon(1));
+        Button selectRifle = new Button(this);
+        selectRifle.setText("EQUIPAR RIFLE");
+        shopPanel.addView(selectRifle);
+        selectRifle.setOnClickListener(v -> selectWeapon(2));
+        Button selectShotgun = new Button(this);
+        selectShotgun.setText("EQUIPAR ESCOPETA");
+        shopPanel.addView(selectShotgun);
+        selectShotgun.setOnClickListener(v -> selectWeapon(3));
         Button pulse = new Button(this);
         pulse.setText("PULSO");
         pulse.setOnClickListener(v -> NativeRenderer.attack());
@@ -166,7 +206,7 @@ public final class NativeGameActivity extends Activity {
         setContentView(frame);
     }
 
-    private void buyItem(int item,String successMessage) {
+    private void selectWeapon(int weapon) {\n        boolean selected=NativeRenderer.selectWeapon(weapon);\n        Toast.makeText(this,selected?\"Arma equipada!\":\"Arma bloqueada ou sem munição.\",Toast.LENGTH_SHORT).show();\n        if(hud!=null) hud.setText(NativeRenderer.getHud());\n    }\n\n    private void buyItem(int item,String successMessage) {
         boolean bought=NativeRenderer.purchase(item);
         Toast.makeText(this,bought?successMessage:"Dinheiro insuficiente ou limite atingido.",Toast.LENGTH_SHORT).show();
         if(hud!=null) hud.setText(NativeRenderer.getHud());
@@ -312,10 +352,10 @@ public final class NativeGameActivity extends Activity {
         private static native void nativeRender();
         private static native void nativeSetMove(float x, float z);
         private static native boolean nativeAttack();
-        private static native boolean nativePurchase(int item);
+        private static native boolean nativePurchase(int item);\n        private static native boolean nativeSelectWeapon(int weapon);
         private static native String nativeGetHud();
         static void attack(){ nativeAttack(); }
-        static boolean purchase(int item){ return nativePurchase(item); }
+        static boolean purchase(int item){ return nativePurchase(item); }\n        static boolean selectWeapon(int weapon){ return nativeSelectWeapon(weapon); }
         static String getHud(){ return nativeGetHud(); }
         static void setMove(float x,float z){nativeSetMove(x,z);}
         @Override public void onSurfaceCreated(GL10 gl, EGLConfig config) { nativeInit(assets); }
