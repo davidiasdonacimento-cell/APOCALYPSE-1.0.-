@@ -59,6 +59,79 @@ void building(float x,float z,float w,float d,float h,float r,float g,float b){
     Vertex C=v(x2,y+h,z2,r*.82f,g*.82f,b*.82f), D=v(x,y+h,z2,r*.88f,g*.88f,b*.88f);
     quad(A,B,C,D);quad(a,b0,B,A);quad(b0,c,C,B);quad(c,d0,D,C);quad(d0,a,A,D);
 }
+void facadeWindow(float x,float y,float z,float w,float h,float r=0.10f,float g=0.19f,float b=0.23f){
+    quad(v(x,y,z,r,g,b),v(x+w,y,z,r,g,b),v(x+w,y+h,z,r*0.82f,g*0.82f,b*0.82f),v(x,y+h,z,r*0.82f,g*0.82f,b*0.82f));
+}
+void detailedBuilding(float x,float z,float w,float d,float h,float r,float g,float b,int floors){
+    building(x,z,w,d,h,r,g,b);
+    const float floorHeight=h/(float)floors;
+    // Recessed-looking front windows and a visible entrance.
+    for(int floor=0;floor<floors;floor++){
+        float wy=0.34f+floor*floorHeight;
+        for(float wx=x+0.30f;wx<x+w-0.35f;wx+=0.78f){
+            if(wx+0.42f>x+w-0.12f) break;
+            facadeWindow(wx,wy,z-0.012f,0.42f,0.34f);
+            // Narrow sill below each window.
+            ground(wx,wy-0.055f,0.42f,0.035f,0.48f,0.49f,0.46f,wy);
+        }
+    }
+    // Entrance door on the street-facing side.
+    facadeWindow(x+w*0.42f,0.13f,z-0.018f,w*0.20f,0.78f,0.12f,0.10f,0.08f);
+    // Roof parapet and ventilation equipment.
+    building(x-0.04f,z-0.04f,w+0.08f,d+0.08f,0.16f,0.34f,0.35f,0.34f);
+    building(x+w*0.62f,z+d*0.55f,0.55f,0.48f,0.38f,0.28f,0.29f,0.28f);
+}
+void streetLight(float x,float z){
+    building(x-0.045f,z-0.045f,0.09f,0.09f,3.1f,0.19f,0.20f,0.20f);
+    building(x-0.04f,z-0.65f,0.08f,0.68f,0.08f,0.20f,0.21f,0.20f);
+    building(x-0.16f,z-0.72f,0.30f,0.22f,0.10f,0.80f,0.72f,0.43f);
+}
+void abandonedCar(float x,float z,float bodyR,float bodyG,float bodyB){
+    building(x,z,1.55f,2.65f,0.62f,bodyR,bodyG,bodyB);
+    building(x+0.20f,z+0.38f,1.15f,1.45f,0.48f,0.16f,0.22f,0.25f);
+    // Four dark wheel blocks and a damaged hood panel.
+    building(x-0.10f,z+0.35f,0.16f,0.42f,0.25f,0.055f,0.06f,0.065f);
+    building(x+1.48f,z+0.35f,0.16f,0.42f,0.25f,0.055f,0.06f,0.065f);
+    building(x-0.10f,z+1.92f,0.16f,0.42f,0.25f,0.055f,0.06f,0.065f);
+    building(x+1.48f,z+1.92f,0.16f,0.42f,0.25f,0.055f,0.06f,0.065f);
+}
+void addStreetDetails(){
+    // Broken lane markings, crossings and drainage strips.
+    for(int p=-21;p<=21;p+=6){
+        ground((float)p,-0.055f,2.0f,0.11f,0.72f,0.69f,0.53f,0.137f);
+        ground(-0.055f,(float)p,0.11f,2.0f,0.72f,0.69f,0.53f,0.138f);
+    }
+    for(int side=-1;side<=1;side+=2){
+        for(int p=-18;p<=18;p+=9){
+            streetLight((float)p+side*3.1f,-3.0f);
+            streetLight((float)p+side*3.1f,3.0f);
+        }
+    }
+    abandonedCar(-7.0f,-1.0f,0.34f,0.20f,0.14f);
+    abandonedCar(4.0f,1.0f,0.20f,0.25f,0.30f);
+    abandonedCar(-16.0f,8.0f,0.30f,0.29f,0.22f);
+    // Rubble piles and broken concrete barriers.
+    for(int i=0;i<18;i++){
+        float x=-21.0f+(float)((i*7)%43);
+        float z=-20.0f+(float)((i*13)%41);
+        building(x,z,0.34f+(i%3)*0.12f,0.30f+(i%2)*0.16f,0.18f+(i%4)*0.08f,0.28f,0.27f,0.24f);
+    }
+}
+void addResidentialDetails(){
+    // Small trees, fences and utility structures in selected lots.
+    for(int i=0;i<22;i++){
+        float x=-22.0f+(float)((i*11)%43);
+        float z=-20.0f+(float)((i*17)%39);
+        building(x,z,0.22f,0.22f,1.15f,0.28f,0.19f,0.12f);
+        building(x-0.55f,z-0.48f,1.30f,1.20f,1.05f,0.12f,0.25f,0.13f);
+    }
+    for(int i=0;i<10;i++){
+        float x=-20.0f+(float)(i*4.0f),z=13.5f;
+        building(x,z,0.12f,0.12f,1.35f,0.28f,0.29f,0.27f);
+        building(x+0.12f,z,0.45f,0.10f,0.85f,0.34f,0.32f,0.27f);
+    }
+}
+
 void addSidewalkNetwork(){
     // Main avenue sidewalks on both sides.
     sidewalkH(-24,-2.85f,48,0.65f); sidewalkH(-24,2.20f,48,0.65f);
@@ -92,22 +165,37 @@ void buildCity(){
     }
     addSidewalkNetwork();
     addPlots();
-    // Buildings distributed over the prepared urban plots.
+    // Distinct residential, commercial and industrial building silhouettes.
     for(int x=-20;x<=16;x+=9) for(int z=-20;z<=16;z+=9){
         if((x==-2&&z==-2)||(x==7&&z==-2)) continue;
-        building(x+0.5f,z+0.6f,2.4f,2.5f,2.0f,0.30f,0.34f,0.38f);
-        building(x+3.4f,z+0.8f,2.7f,2.0f,3.8f,0.25f,0.31f,0.37f);
-        building(x+1.2f,z+3.8f,2.2f,2.4f,1.5f,0.34f,0.29f,0.25f);
+        const int pattern=((x+20)/9+(z+20)/9)%4;
+        if(pattern==0){
+            detailedBuilding(x+0.5f,z+0.6f,2.4f,2.5f,2.0f,0.30f,0.34f,0.38f,2);
+            detailedBuilding(x+3.4f,z+0.8f,2.7f,2.0f,3.8f,0.25f,0.31f,0.37f,3);
+        }else if(pattern==1){
+            detailedBuilding(x+0.6f,z+0.7f,5.4f,2.5f,2.7f,0.38f,0.31f,0.24f,2);
+            building(x+4.4f,z+3.8f,1.5f,1.6f,1.2f,0.28f,0.30f,0.32f);
+        }else if(pattern==2){
+            detailedBuilding(x+0.5f,z+0.6f,2.2f,2.4f,5.0f,0.29f,0.33f,0.39f,4);
+            detailedBuilding(x+3.1f,z+0.8f,2.8f,2.1f,2.1f,0.42f,0.36f,0.27f,2);
+        }else{
+            detailedBuilding(x+0.7f,z+0.7f,4.8f,4.7f,1.65f,0.34f,0.30f,0.26f,1);
+        }
     }
-    // Hospital pad and building landmark.
+    // Hospital pad, emergency wing and service annex.
     ground(5.0f,5.0f,7.0f,7.0f,0.29f,0.30f,0.28f,0.14f);
-    building(6.0f,6.0f,4.8f,4.5f,5.2f,0.58f,0.61f,0.62f);
-    // Contaminated park with a low-poly tree grove.
+    detailedBuilding(6.0f,6.0f,4.8f,4.5f,5.2f,0.58f,0.61f,0.62f,4);
+    building(5.4f,9.0f,1.0f,1.1f,1.8f,0.72f,0.72f,0.68f);
+    // Contaminated park with trees, paths and benches.
     ground(-20.0f,5.0f,7.0f,7.0f,0.10f,0.22f,0.12f,0.14f);
+    ground(-19.4f,8.0f,5.8f,0.55f,0.42f,0.39f,0.29f,0.15f);
     for(int i=0;i<8;i++){
         float tx=-19.0f+(i%4)*1.6f,tz=6.0f+(i/4)*3.0f;
-        building(tx,tz,0.65f,0.65f,1.6f,0.12f,0.30f,0.14f);
+        building(tx,tz,0.22f,0.22f,1.1f,0.28f,0.18f,0.12f);
+        building(tx-0.45f,tz-0.35f,1.1f,0.95f,1.25f,0.12f,0.30f,0.14f);
     }
+    addStreetDetails();
+    addResidentialDetails();
 }
 
 void addPlayerModel(){
@@ -202,8 +290,8 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     if(dt>0.05f)dt=0.05f;
     float length=sqrtf(moveX*moveX+moveZ*moveZ);
     if(length>0.01f){playerX+=(moveX/length)*3.2f*dt;playerZ+=(moveZ/length)*3.2f*dt;}
-    if(playerX < -25.0f)playerX=-25.0f;if(playerX>25.0f)playerX=25.0f;
-    if(playerZ < -25.0f)playerZ=-25.0f;if(playerZ>25.0f)playerZ=25.0f;
+    if(playerX < -28.0f)playerX=-28.0f;if(playerX>28.0f)playerX=28.0f;
+    if(playerZ < -28.0f)playerZ=-28.0f;if(playerZ>28.0f)playerZ=28.0f;
     survival.update(dt,playerX,playerZ);
     glUseProgram(program);
     const float aspect=(float)surfaceWidth/(float)surfaceHeight;
