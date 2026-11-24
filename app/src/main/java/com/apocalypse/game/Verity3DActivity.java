@@ -82,7 +82,22 @@ public final class Verity3DActivity extends Activity {
         LinearLayout.LayoutParams p1 = new LinearLayout.LayoutParams(-1, dp(48));
         p1.topMargin = dp(8);
         panel.addView(talk, p1);
-        talk.setOnClickListener(v -> startActivity(new Intent(this, VeritySceneActivity.class)));
+        talk.setOnClickListener(v -> {
+            surface.queueEvent(() -> Renderer.nativeSetAnimation(2));
+            startActivity(new Intent(this, VeritySceneActivity.class));
+        });
+
+        Button wave = button("ACENAR / EXPRESSÃO", Color.rgb(35, 91, 126));
+        LinearLayout.LayoutParams waveParams = new LinearLayout.LayoutParams(-1, dp(46));
+        waveParams.topMargin = dp(7);
+        panel.addView(wave, waveParams);
+        wave.setOnClickListener(v -> surface.queueEvent(() -> Renderer.nativeSetAnimation(1)));
+
+        Button walk = button("TESTAR ANIMAÇÃO DE CAMINHADA", Color.rgb(65, 76, 102));
+        LinearLayout.LayoutParams walkParams = new LinearLayout.LayoutParams(-1, dp(46));
+        walkParams.topMargin = dp(7);
+        panel.addView(walk, walkParams);
+        walk.setOnClickListener(v -> surface.queueEvent(() -> Renderer.nativeSetAnimation(3)));
 
         Button start = button("COMEÇAR PARTIDA", Color.rgb(22, 116, 91));
         LinearLayout.LayoutParams p2 = new LinearLayout.LayoutParams(-1, dp(52));
@@ -123,7 +138,7 @@ public final class Verity3DActivity extends Activity {
 
     @Override protected void onResume() {
         super.onResume();
-        if (surface != null) surface.onResume();
+        if (surface != null) { surface.onResume(); surface.queueEvent(() -> Renderer.nativeSetAnimation(0)); }
     }
 
     @Override protected void onPause() {
@@ -141,7 +156,7 @@ public final class Verity3DActivity extends Activity {
         static { System.loadLibrary("apocalypse_engine"); }
         private static native void nativeInit();
         private static native void nativeResize(int width, int height);
-        private static native void nativeRender();
+        private static native void nativeRender();\n        private static native void nativeSetAnimation(int mode);
         @Override public void onSurfaceCreated(GL10 gl, EGLConfig config) { nativeInit(); }
         @Override public void onSurfaceChanged(GL10 gl, int width, int height) { nativeResize(width, height); }
         @Override public void onDrawFrame(GL10 gl) { nativeRender(); }
