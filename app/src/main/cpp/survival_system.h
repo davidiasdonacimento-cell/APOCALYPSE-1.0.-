@@ -43,6 +43,7 @@ private:
     bool weaponOwned[4]={true,false,false,false};
     int shurikenAmmo=0, rifleAmmo=0, shotgunAmmo=0;
     void spawnWave();
+    float lastPlayerX=0.0f, lastPlayerZ=0.0f;
     int waterCount=0, foodCount=0, materialCount=0, medkitCount=0;
     float pulseCooldown=0.0f;
     std::vector<Zombie> zombieList;
