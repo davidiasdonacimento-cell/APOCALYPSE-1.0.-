@@ -111,3 +111,9 @@ O APOCALYPSE deve adaptar os padrões adequados, sem copiar contas, loja, regras
 - Primeiro modelo OBJ de hospital adicionado e chamado na cena de gameplay.
 - Fallback procedural compacto é usado somente quando os mapas não estão presentes. Não é correto descrever o asset atual como modelo fotorealista ou textura artística de alta resolução.
 - Pendente: imagens artísticas reais, tratamento completo de transforms de nós glTF, transparência/cutout, validação de shaders em GPU real, medição de FPS/memória e teste no Redmi 12.
+
+
+## Validação de compilação — 24/11/2026
+- GitHub Actions: `assembleDebug` concluído com sucesso para o código nativo e Java integrado, commit `1512cc20c4ac90efbb0939b504403783f19e1131`.
+- Artefato `apocalypse-debug-apk` gerado e publicado no workflow `45419387888`.
+- Esta validação confirma compilação Android arm64-v8a; não comprova teste visual ou execução no Redmi 12. Teste físico e validação de shader em GPU permanecem pendentes.
