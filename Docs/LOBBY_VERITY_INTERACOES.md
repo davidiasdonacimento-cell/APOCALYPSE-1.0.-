@@ -54,3 +54,11 @@
 - Isso corrige a orientação solicitada, mas não prova que o lobby 3D esteja funcional ou visualmente completo.
 - Próximas tarefas obrigatórias: construir cenário 3D de lobby com piso, iluminação, pontos de câmera e elementos de ambiente; ajustar enquadramento da personagem em landscape; integrar o botão de conversa sem perder o estado do lobby; testar fluxo lobby -> conversa -> retorno -> partida; validar no Redmi 12.
 - Não marcar como concluído até haver APK recompilado e teste real no dispositivo.
+
+
+## Integração da VERITY na partida — 24/11/2026
+- A malha procedural animada da VERITY agora possui uma interface C++ compartilhada e é inicializada no contexto OpenGL da partida.
+- O motor chama a renderização da companheira ao lado do jogador, sem depender da Activity separada do lobby.
+- A animação de caminhada é aplicada durante a renderização no mundo.
+- A presença visual foi integrada no código, mas ainda exige validação em aparelho Android real; não declarar como visualmente confirmada antes do teste.
+- O modelo continua procedural/low-poly. Um modelo artístico rigado e texturizado continua pendente.
