@@ -126,3 +126,14 @@ O APOCALYPSE deve adaptar os padrões adequados, sem copiar contas, loja, regras
 - Reduzida a intensidade de iluminação do cenário e do shader PBR.
 - Adicionado diagnóstico de saúde do gateway e leitura de mensagens HTTP reais na conversa da VERITY.
 - Pendente: compilação deste incremento, inspeção da imagem no dispositivo, confirmação de que o endpoint/token/provedor estão corretos e substituição dos modelos procedurais por assets artísticos rigados.
+
+
+## Incremento — fala ambiente e personagens volumétricos — 24/11/2026
+- A partida agora agenda falas espontâneas da VERITY após 25 segundos e a cada 90 segundos, usando o HUD real como contexto e o gateway previamente configurado.
+- Respostas são exibidas em legenda temporária e sintetizadas pelo Android TTS em português brasileiro; controle persistente permite desligar a voz.
+- Requisições ocorrem em executor separado da renderização; pausa interrompe agenda e voz.
+- A VERITY foi afastada para 1,72 unidade lateral e alterna idle/caminhada conforme o jogador se move.
+- A malha da VERITY recebe iluminação volumétrica por normais derivadas.
+- Zumbis passaram a ter malhas 3D anatômicas por partes e ciclo procedural simples de membros em patrulha/perseguição.
+- **Não declarar personagens realistas concluídos:** jogador, VERITY e zumbis continuam low-poly procedurais. Skinning glTF, rig importado, blendshapes e assets artísticos permanecem pendentes.
+- Pendente: build CI deste incremento, inspeção visual/sonora no Redmi 12 e ajuste de posição/legibilidade conforme o teste real.
