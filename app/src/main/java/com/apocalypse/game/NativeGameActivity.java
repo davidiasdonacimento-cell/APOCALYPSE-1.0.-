@@ -10,6 +10,8 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 import android.os.Handler;
 import android.os.Looper;
 import android.graphics.Color;
@@ -110,6 +112,45 @@ public final class NativeGameActivity extends Activity {
         hudParams.setMargins(12, 64, 12, 0);
         frame.addView(hud, hudParams);
 
+        Button shopToggle = new Button(this);
+        shopToggle.setText("LOJA  $");
+        FrameLayout.LayoutParams shopToggleParams = new FrameLayout.LayoutParams(-2,-2,Gravity.TOP|Gravity.END);
+        shopToggleParams.setMargins(0,64,12,0);
+        frame.addView(shopToggle,shopToggleParams);
+
+        LinearLayout shopPanel = new LinearLayout(this);
+        shopPanel.setOrientation(LinearLayout.VERTICAL);
+        shopPanel.setPadding(12,12,12,12);
+        shopPanel.setBackgroundColor(0xEE101B2A);
+        shopPanel.setVisibility(View.GONE);
+        FrameLayout.LayoutParams shopPanelParams = new FrameLayout.LayoutParams(
+            (int)(250*getResources().getDisplayMetrics().density),-2,
+            Gravity.CENTER|Gravity.END);
+        shopPanelParams.setMargins(0,0,12,0);
+        frame.addView(shopPanel,shopPanelParams);
+
+        TextView shopTitle = new TextView(this);
+        shopTitle.setText("LOJA DE SOBREVIVÊNCIA\nGanhe $30 por zumbi derrotado");
+        shopTitle.setTextColor(Color.WHITE);
+        shopTitle.setTextSize(14);
+        shopTitle.setPadding(4,4,4,8);
+        shopPanel.addView(shopTitle);
+        Button buyHeal = new Button(this);
+        buyHeal.setText("CURA +40  •  $50");
+        shopPanel.addView(buyHeal);
+        buyHeal.setOnClickListener(v -> buyItem(0,"Cura comprada!"));
+        Button buyPulse = new Button(this);
+        buyPulse.setText("PULSO FORTE  •  $120");
+        shopPanel.addView(buyPulse);
+        buyPulse.setOnClickListener(v -> buyItem(1,"Pulso melhorado!"));
+        Button buyArmor = new Button(this);
+        buyArmor.setText("COLETE  •  $90");
+        shopPanel.addView(buyArmor);
+        buyArmor.setOnClickListener(v -> buyItem(2,"Colete melhorado!"));
+        shopToggle.setOnClickListener(v -> {
+            shopPanel.setVisibility(shopPanel.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);
+        });
+
         Button pulse = new Button(this);
         pulse.setText("PULSO");
         pulse.setOnClickListener(v -> NativeRenderer.attack());
@@ -123,6 +164,12 @@ public final class NativeGameActivity extends Activity {
         controls.setMargins(20, 0, 0, 24);
         frame.addView(joystick, controls);
         setContentView(frame);
+    }
+
+    private void buyItem(int item,String successMessage) {
+        boolean bought=NativeRenderer.purchase(item);
+        Toast.makeText(this,bought?successMessage:"Dinheiro insuficiente ou limite atingido.",Toast.LENGTH_SHORT).show();
+        if(hud!=null) hud.setText(NativeRenderer.getHud());
     }
 
     @Override protected void onResume() {
@@ -265,8 +312,10 @@ public final class NativeGameActivity extends Activity {
         private static native void nativeRender();
         private static native void nativeSetMove(float x, float z);
         private static native boolean nativeAttack();
+        private static native boolean nativePurchase(int item);
         private static native String nativeGetHud();
         static void attack(){ nativeAttack(); }
+        static boolean purchase(int item){ return nativePurchase(item); }
         static String getHud(){ return nativeGetHud(); }
         static void setMove(float x,float z){nativeSetMove(x,z);}
         @Override public void onSurfaceCreated(GL10 gl, EGLConfig config) { nativeInit(assets); }
