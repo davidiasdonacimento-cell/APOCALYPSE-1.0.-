@@ -8,7 +8,8 @@ static float distance2(float ax,float az,float bx,float bz) {
     return dx*dx+dz*dz;
 }
 void SurvivalSystem::reset() {
-    playerHealth=100; waterCount=0; foodCount=0; materialCount=0; medkitCount=0; pulseCooldown=0.0f;
+    playerHealth=100; moneyCount=0; pulseDamage=1; armorLevel=0;
+    waterCount=0; foodCount=0; materialCount=0; medkitCount=0; pulseCooldown=0.0f;
     zombieList.clear();
     zombieList.push_back({-8.0f, 3.0f, 3, 0, 0.0f});
     zombieList.push_back({7.0f, -6.0f, 3, 0, 0.0f});
@@ -40,7 +41,8 @@ void SurvivalSystem::update(float dt,float px,float pz) {
             z.x+=(px-z.x)/d*speed*dt;
             z.z+=(pz-z.z)/d*speed*dt;
         } else if(z.state==1 && z.attackCooldown<=0.0f && playerHealth>0) {
-            playerHealth=std::max(0,playerHealth-6);
+            const int incomingDamage=std::max(1,6-armorLevel*2);
+            playerHealth=std::max(0,playerHealth-incomingDamage);
             z.attackCooldown=1.25f;
         }
     }
@@ -67,9 +69,24 @@ bool SurvivalSystem::usePulse(float px,float pz) {
     }
     if(target<0) return false;
     auto& z=zombieList[(size_t)target];
-    --z.health;
-    if(z.health<=0) z.state=2;
+    z.health-=pulseDamage;
+    if(z.health<=0) { z.state=2; moneyCount+=30; }
     return true;
+}
+bool SurvivalSystem::purchase(int item) {
+    if(item==0) {
+        if(moneyCount<50 || playerHealth>=100) return false;
+        moneyCount-=50; playerHealth=std::min(100,playerHealth+40); return true;
+    }
+    if(item==1) {
+        if(moneyCount<120 || pulseDamage>=3) return false;
+        moneyCount-=120; ++pulseDamage; return true;
+    }
+    if(item==2) {
+        if(moneyCount<90 || armorLevel>=3) return false;
+        moneyCount-=90; ++armorLevel; return true;
+    }
+    return false;
 }
 int SurvivalSystem::aliveZombies() const {
     int count=0;
