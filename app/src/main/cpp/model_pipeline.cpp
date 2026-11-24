@@ -26,12 +26,12 @@ struct KeyHash { size_t operator()(const Key& k)const{return (size_t)(k.p*738560
 int resolveIndex(int i,size_t count){return i>0?i-1:(i<0?(int)count+i:-1);}
 bool parseFaceIndex(const std::string& token,Key& k){
     k={-1,-1,-1};int a=0,b=0,c=0;
-    size_t p1=token.find('/');if(p1==std::string::npos)return std::sscanf(token.c_str(),"%d",&a)==1&&(k.p=a-1,true);
+    size_t p1=token.find('/');if(p1==std::string::npos)return std::sscanf(token.c_str(),"%d",&a)==1&&(k.p=a,true);
     std::string x=token.substr(0,p1);if(std::sscanf(x.c_str(),"%d",&a)!=1)return false;
     size_t p2=token.find('/',p1+1);
     if(p2==std::string::npos){std::string y=token.substr(p1+1);if(!y.empty())std::sscanf(y.c_str(),"%d",&b);}
     else {std::string y=token.substr(p1+1,p2-p1-1),z=token.substr(p2+1);if(!y.empty())std::sscanf(y.c_str(),"%d",&b);if(!z.empty())std::sscanf(z.c_str(),"%d",&c);}
-    k={a-1,b?b-1:-1,c?c-1:-1};return true;
+    k={a,b,c};return true;
 }
 void loadMtl(AAssetManager* assets,const std::string& path,std::unordered_map<std::string,PbrMaterial>& mats){
     std::vector<unsigned char> raw;if(!readAsset(assets,path.c_str(),raw))return;
