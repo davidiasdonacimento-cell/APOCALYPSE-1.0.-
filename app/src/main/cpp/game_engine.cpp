@@ -13,7 +13,7 @@ static double androidGetCurrentTimeNanos(){struct timespec t{};clock_gettime(CLO
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 namespace {
-struct Vertex { float x,y,z,r,g,b; };
+struct Vertex { float x,y,z,r,g,b,u,v,material; };
 GLuint program=0, vertexBuffer=0, playerBuffer=0, survivalBuffer=0;
 GLuint surfaceTextures[3]={0,0,0};
 GLint vertexCount=0, playerVertexCount=0;
@@ -24,7 +24,8 @@ struct WorldCollider { float minX, maxX, minZ, maxZ; };
 std::vector<WorldCollider> worldColliders;
 apocalypse::SurvivalSystem survival;
 
-Vertex v(float x,float y,float z,float r,float g,float b){return {x,y,z,r,g,b};}
+Vertex v(float x,float y,float z,float r,float g,float b){return {x,y,z,r,g,b,0,0,3};}
+Vertex vt(float x,float y,float z,float r,float g,float b,float u,float vv,float m){return {x,y,z,r,g,b,u,vv,m};}
 void triangle(Vertex a,Vertex b,Vertex c){world.push_back(a);world.push_back(b);world.push_back(c);}
 void quad(Vertex a,Vertex b,Vertex c,Vertex d){triangle(a,b,c);triangle(a,c,d);}
 
