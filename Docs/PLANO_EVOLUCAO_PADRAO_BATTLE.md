@@ -137,3 +137,8 @@ O APOCALYPSE deve adaptar os padrões adequados, sem copiar contas, loja, regras
 - Zumbis passaram a ter malhas 3D anatômicas por partes e ciclo procedural simples de membros em patrulha/perseguição.
 - **Não declarar personagens realistas concluídos:** jogador, VERITY e zumbis continuam low-poly procedurais. Skinning glTF, rig importado, blendshapes e assets artísticos permanecem pendentes.
 - Pendente: build CI deste incremento, inspeção visual/sonora no Redmi 12 e ajuste de posição/legibilidade conforme o teste real.
+
+## Ciclo procedural do sobrevivente — 24/11/2026
+- O modelo 3D do jogador agora atualiza a malha durante o movimento e desloca alternadamente pernas, botas e braços para formar um ciclo simples de caminhada.
+- Ao parar, a malha retorna à pose neutra. A atualização do buffer acontece somente durante o movimento e na transição para parado.
+- Isso é animação procedural de peças volumétricas, não skinning por pesos de vértices nem animação mocap; rig esquelético completo permanece pendente.
