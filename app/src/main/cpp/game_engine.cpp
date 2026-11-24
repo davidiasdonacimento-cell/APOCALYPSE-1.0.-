@@ -2,6 +2,7 @@
 #include <GLES3/gl3.h>
 #include <android/log.h>
 #include <vector>
+#include <cmath>
 
 #define LOG_TAG "APOCALYPSE_ENGINE"
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
@@ -10,93 +11,132 @@ namespace {
 struct Vertex { float x,y,z,r,g,b; };
 GLuint program=0, vertexBuffer=0;
 GLint vertexCount=0;
-GLint colorLocation=-1;
 int surfaceWidth=1, surfaceHeight=1;
 std::vector<Vertex> world;
 
-void triangle(Vertex a, Vertex b, Vertex c) {
-    world.push_back(a); world.push_back(b); world.push_back(c);
+Vertex v(float x,float y,float z,float r,float g,float b){return {x,y,z,r,g,b};}
+void triangle(Vertex a,Vertex b,Vertex c){world.push_back(a);world.push_back(b);world.push_back(c);}
+void quad(Vertex a,Vertex b,Vertex c,Vertex d){triangle(a,b,c);triangle(a,c,d);}
+float terrainHeight(float x,float z){
+    // Subtle, deterministic undulation; roads and building pads remain level.
+    return 0.045f*std::sin(x*0.31f)*std::cos(z*0.27f)
+         + 0.025f*std::sin((x+z)*0.53f);
 }
-Vertex v(float x,float y,float z,float r,float g,float b){ return {x,y,z,r,g,b}; }
-
-void quad(Vertex a,Vertex b,Vertex c,Vertex d) {
-    triangle(a,b,c); triangle(a,c,d);
+void addTerrain(){
+    const int cells=48; const float start=-30.0f, step=60.0f/(float)cells;
+    for(int ix=0;ix<cells;ix++) for(int iz=0;iz<cells;iz++){
+        float x=start+ix*step,z=start+iz*step;
+        float h1=terrainHeight(x,z),h2=terrainHeight(x+step,z);
+        float h3=terrainHeight(x+step,z+step),h4=terrainHeight(x,z+step);
+        float tint=((ix*7+iz*11)%9)*0.003f;
+        float r=0.15f+tint,g=0.205f+tint,b=0.145f+tint;
+        quad(v(x,h1,z,r,g,b),v(x+step,h2,z,r,g,b),
+             v(x+step,h3,z+step,r*0.98f,g*0.98f,b),
+             v(x,h4,z+step,r*0.96f,g*0.96f,b));
+    }
 }
-void boxBuilding(float x,float z,float w,float d,float h,float r,float g,float b) {
-    const float x2=x+w, z2=z+d;
-    Vertex a=v(x,0,z,r*.55f,g*.55f,b*.55f), b0=v(x2,0,z,r*.62f,g*.62f,b*.62f);
-    Vertex c=v(x2,0,z2,r*.48f,g*.48f,b*.48f), d0=v(x,0,z2,r*.52f,g*.52f,b*.52f);
-    Vertex A=v(x,h,z,r,g,b), B=v(x2,h,z,r*.92f,g*.92f,b*.92f);
-    Vertex C=v(x2,h,z2,r*.82f,g*.82f,b*.82f), D=v(x,h,z2,r*.88f,g*.88f,b*.88f);
-    quad(A,B,C,D); quad(a,b0,B,A); quad(b0,c,C,B); quad(c,d0,D,C); quad(d0,a,A,D);
+void ground(float x,float z,float w,float d,float r,float g,float b,float y=0.105f){
+    quad(v(x,y,z,r,g,b),v(x+w,y,z,r,g,b),v(x+w,y,z+d,r,g,b),v(x,y,z+d,r,g,b));
 }
-void ground(float x,float z,float w,float d,float r,float g,float b) {
-    quad(v(x,0,z,r,g,b),v(x+w,0,z,r,g,b),v(x+w,0,z+d,r,g,b),v(x,0,z+d,r,g,b));
+void sidewalkH(float x,float z,float w,float d){
+    ground(x,z,w,d,0.39f,0.39f,0.35f,0.125f);
 }
-void buildCity() {
+void sidewalkV(float x,float z,float w,float d){
+    ground(x,z,w,d,0.39f,0.39f,0.35f,0.125f);
+}
+void building(float x,float z,float w,float d,float h,float r,float g,float b){
+    float x2=x+w,z2=z+d,y=0.12f;
+    Vertex a=v(x,y,z,r*.52f,g*.52f,b*.52f), b0=v(x2,y,z,r*.58f,g*.58f,b*.58f);
+    Vertex c=v(x2,y,z2,r*.48f,g*.48f,b*.48f), d0=v(x,y,z2,r*.50f,g*.50f,b*.50f);
+    Vertex A=v(x,y+h,z,r,g,b), B=v(x2,y+h,z,r*.92f,g*.92f,b*.92f);
+    Vertex C=v(x2,y+h,z2,r*.82f,g*.82f,b*.82f), D=v(x,y+h,z2,r*.88f,g*.88f,b*.88f);
+    quad(A,B,C,D);quad(a,b0,B,A);quad(b0,c,C,B);quad(c,d0,D,C);quad(d0,a,A,D);
+}
+void addSidewalkNetwork(){
+    // Main avenue sidewalks on both sides.
+    sidewalkH(-24,-2.85f,48,0.65f); sidewalkH(-24,2.20f,48,0.65f);
+    sidewalkV(-2.85f,-24,0.65f,48); sidewalkV(2.20f,-24,0.65f,48);
+    // Side-street sidewalks.
+    for(int p=-18;p<=18;p+=9){
+        sidewalkH(-24,(float)p-1.15f,48,0.35f);
+        sidewalkH(-24,(float)p+0.80f,48,0.35f);
+        sidewalkV((float)p-1.15f,-24,0.35f,48);
+        sidewalkV((float)p+0.80f,-24,0.35f,48);
+    }
+}
+void addPlots(){
+    // Raised, level building pads and vacant lots between streets.
+    for(int x=-20;x<=16;x+=9) for(int z=-20;z<=16;z+=9){
+        if((x==-2&&z==-2)||(x==7&&z==-2)) continue;
+        ground((float)x,(float)z,7.0f,7.0f,0.24f,0.245f,0.22f,0.115f);
+        // Dirt / rubble patches on some vacant corners.
+        if(((x+z)/9)%2==0) ground(x+0.25f,z+0.25f,1.8f,1.4f,0.30f,0.24f,0.16f,0.122f);
+    }
+}
+void buildCity(){
     world.clear();
-    ground(-24,-24,48,48,0.16f,0.20f,0.17f);
-    // Main asphalt avenues crossing the city.
-    ground(-24,-2.2f,48,4.4f,0.12f,0.13f,0.15f);
-    ground(-2.2f,-24,4.4f,48,0.12f,0.13f,0.15f);
-    // Side streets.
-    for(int p=-18;p<=18;p+=9) {
-        ground(-24,(float)p-0.75f,48,1.5f,0.19f,0.20f,0.21f);
-        ground((float)p-0.75f,-24,1.5f,48,0.19f,0.20f,0.21f);
+    addTerrain();
+    // Asphalt roads above terrain to avoid z-fighting.
+    ground(-24,-2.2f,48,4.4f,0.105f,0.115f,0.13f,0.13f);
+    ground(-2.2f,-24,4.4f,48,0.105f,0.115f,0.13f,0.13f);
+    for(int p=-18;p<=18;p+=9){
+        ground(-24,(float)p-0.75f,48,1.5f,0.17f,0.18f,0.18f,0.132f);
+        ground((float)p-0.75f,-24,1.5f,48,0.17f,0.18f,0.18f,0.132f);
     }
-    // Urban blocks with alleys and varied building heights.
-    for(int x=-20;x<=16;x+=9) for(int z=-20;z<=16;z+=9) {
-        if ((x== -2 && z== -2) || (x==7 && z==-2)) continue;
-        ground((float)x,(float)z,7.0f,7.0f,0.22f,0.23f,0.21f);
-        boxBuilding(x+0.5f,z+0.6f,2.4f,2.5f,2.0f,0.30f,0.34f,0.38f);
-        boxBuilding(x+3.4f,z+0.8f,2.7f,2.0f,3.8f,0.25f,0.31f,0.37f);
-        boxBuilding(x+1.2f,z+3.8f,2.2f,2.4f,1.5f,0.34f,0.29f,0.25f);
+    addSidewalkNetwork();
+    addPlots();
+    // Buildings distributed over the prepared urban plots.
+    for(int x=-20;x<=16;x+=9) for(int z=-20;z<=16;z+=9){
+        if((x==-2&&z==-2)||(x==7&&z==-2)) continue;
+        building(x+0.5f,z+0.6f,2.4f,2.5f,2.0f,0.30f,0.34f,0.38f);
+        building(x+3.4f,z+0.8f,2.7f,2.0f,3.8f,0.25f,0.31f,0.37f);
+        building(x+1.2f,z+3.8f,2.2f,2.4f,1.5f,0.34f,0.29f,0.25f);
     }
-    // Distinct landmark: hospital compound.
-    ground(5.0f,5.0f,7.0f,7.0f,0.27f,0.28f,0.25f);
-    boxBuilding(6.0f,6.0f,4.8f,4.5f,5.2f,0.58f,0.61f,0.62f);
-    // Park / contaminated green space.
-    ground(-20.0f,5.0f,7.0f,7.0f,0.12f,0.25f,0.15f);
-    for(int i=0;i<8;i++) {
-        float tx=-19.0f+(i%4)*1.6f, tz=6.0f+(i/4)*3.0f;
-        // Low polygonal tree canopies represented as compact green blocks.
-        boxBuilding(tx,tz,0.65f,0.65f,1.6f,0.12f,0.30f,0.14f);
+    // Hospital pad and building landmark.
+    ground(5.0f,5.0f,7.0f,7.0f,0.29f,0.30f,0.28f,0.14f);
+    building(6.0f,6.0f,4.8f,4.5f,5.2f,0.58f,0.61f,0.62f);
+    // Contaminated park with a low-poly tree grove.
+    ground(-20.0f,5.0f,7.0f,7.0f,0.10f,0.22f,0.12f,0.14f);
+    for(int i=0;i<8;i++){
+        float tx=-19.0f+(i%4)*1.6f,tz=6.0f+(i/4)*3.0f;
+        building(tx,tz,0.65f,0.65f,1.6f,0.12f,0.30f,0.14f);
     }
 }
-GLuint shader(GLenum type,const char* src) {
-    GLuint s=glCreateShader(type); glShaderSource(s,1,&src,nullptr); glCompileShader(s);
-    GLint ok=GL_FALSE; glGetShaderiv(s,GL_COMPILE_STATUS,&ok);
-    if(ok!=GL_TRUE){char log[1024]={};glGetShaderInfoLog(s,sizeof(log),nullptr,log);LOGE("Shader: %s",log);glDeleteShader(s);return 0;}
+GLuint compileShader(GLenum type,const char* src){
+    GLuint s=glCreateShader(type);glShaderSource(s,1,&src,nullptr);glCompileShader(s);
+    GLint ok=GL_FALSE;glGetShaderiv(s,GL_COMPILE_STATUS,&ok);
+    if(ok!=GL_TRUE){char log[1024]={};glGetShaderInfoLog(s,sizeof(log),nullptr,log);LOGE("Shader compile: %s",log);glDeleteShader(s);return 0;}
     return s;
 }
 }
 extern "C" JNIEXPORT void JNICALL
-Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeInit(JNIEnv*,jclass) {
-    const char* vs="#version 300 es\nlayout(location=0) in vec3 aPos; layout(location=1) in vec3 aColor; out vec3 color; void main(){ float sx=(aPos.x-aPos.z)*0.040; float sy=(aPos.x+aPos.z)*0.022-aPos.y*0.085; gl_Position=vec4(sx,sy,0.0,1.0); color=aColor; }";
-    const char* fs="#version 300 es\nprecision mediump float; in vec3 color; out vec4 fragColor; void main(){fragColor=vec4(color,1.0);}";
-    GLuint a=shader(GL_VERTEX_SHADER,vs), b=shader(GL_FRAGMENT_SHADER,fs);
+Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeInit(JNIEnv*,jclass){
+    const char* vs="#version 300 es\nlayout(location=0) in vec3 aPos; layout(location=1) in vec3 aColor; out vec3 color; void main(){float sx=(aPos.x-aPos.z)*0.032;float sy=(aPos.x+aPos.z)*0.018-aPos.y*0.075;float depth=clamp((aPos.x+aPos.z)*0.0008-aPos.y*0.001,-0.08,0.08);gl_Position=vec4(sx,sy,depth,1.0);color=aColor;}";
+    const char* fs="#version 300 es\nprecision mediump float;in vec3 color;out vec4 fragColor;void main(){fragColor=vec4(color,1.0);}";
+    GLuint a=compileShader(GL_VERTEX_SHADER,vs),b=compileShader(GL_FRAGMENT_SHADER,fs);
     if(!a||!b)return;
-    program=glCreateProgram(); glAttachShader(program,a); glAttachShader(program,b); glLinkProgram(program);
-    glDeleteShader(a); glDeleteShader(b);
-    GLint linked=GL_FALSE; glGetProgramiv(program,GL_LINK_STATUS,&linked);
-    if(linked!=GL_TRUE){char log[1024]={};glGetProgramInfoLog(program,sizeof(log),nullptr,log);LOGE("Link: %s",log);glDeleteProgram(program);program=0;return;}
+    program=glCreateProgram();glAttachShader(program,a);glAttachShader(program,b);glLinkProgram(program);
+    glDeleteShader(a);glDeleteShader(b);
+    GLint linked=GL_FALSE;glGetProgramiv(program,GL_LINK_STATUS,&linked);
+    if(linked!=GL_TRUE){char log[1024]={};glGetProgramInfoLog(program,sizeof(log),nullptr,log);LOGE("Program link: %s",log);glDeleteProgram(program);program=0;return;}
     buildCity();
-    glGenBuffers(1,&vertexBuffer); glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER,world.size()*sizeof(Vertex),world.data(),GL_STATIC_DRAW);
+    glGenBuffers(1,&vertexBuffer);glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER,(GLsizeiptr)(world.size()*sizeof(Vertex)),world.data(),GL_STATIC_DRAW);
     vertexCount=(GLint)world.size();
+    glEnable(GL_DEPTH_TEST);glDepthFunc(GL_LEQUAL);
 }
 extern "C" JNIEXPORT void JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeResize(JNIEnv*,jclass,jint w,jint h){
-    surfaceWidth=w>0?w:1; surfaceHeight=h>0?h:1; glViewport(0,0,surfaceWidth,surfaceHeight);
+    surfaceWidth=w>0?w:1;surfaceHeight=h>0?h:1;glViewport(0,0,surfaceWidth,surfaceHeight);
 }
 extern "C" JNIEXPORT void JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNIEnv*,jclass){
     glViewport(0,0,surfaceWidth,surfaceHeight);
-    glClearColor(0.035f,0.055f,0.075f,1.0f); glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    glClearColor(0.035f,0.055f,0.075f,1.0f);glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     if(!program||!vertexBuffer||vertexCount<=0)return;
-    glUseProgram(program); glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer);
-    glEnableVertexAttribArray(0); glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)0);
-    glEnableVertexAttribArray(1); glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(3*sizeof(float)));
+    glUseProgram(program);glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer);
+    glEnableVertexAttribArray(0);glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)0);
+    glEnableVertexAttribArray(1);glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(3*sizeof(float)));
     glDrawArrays(GL_TRIANGLES,0,vertexCount);
-    glDisableVertexAttribArray(0); glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(0);glDisableVertexAttribArray(1);
 }
