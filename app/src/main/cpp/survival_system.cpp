@@ -25,7 +25,8 @@ void SurvivalSystem::reset() {
 void SurvivalSystem::update(float dt,float px,float pz) {
     lastPlayerX=px; lastPlayerZ=pz;
     dt=std::max(0.0f,std::min(dt,0.05f));
-    pulseCooldown=std::max(0.0f,pulseCooldown-dt);\n    updateProjectiles(projectileList,zombieList,dt,moneyCount);
+    pulseCooldown=std::max(0.0f,pulseCooldown-dt);\n    updateProjectiles(projectileList,zombieList,impactList,dt,moneyCount);
+    for(auto it=impactList.begin();it!=impactList.end();){it->life-=dt;if(it->life<=0.0f)it=impactList.erase(it);else ++it;}
     for(auto& z:zombieList) {
         if(z.state==2) continue;
         z.attackCooldown=std::max(0.0f,z.attackCooldown-dt);
@@ -120,7 +121,7 @@ bool SurvivalSystem::fireWeapon(float px,float pz,float dirX,float dirZ) {
     return true;
 }
 static void updateProjectiles(std::vector<Projectile>& shots,std::vector<Zombie>& zombies,
-                              float dt,int& money) {
+                              std::vector<Impact>& impacts,float dt,int& money) {
     for(auto it=shots.begin();it!=shots.end();) {
         const float step=std::min(it->speed*dt,it->maxRange-it->travelled);
         const float oldX=it->x, oldZ=it->z;
@@ -134,6 +135,7 @@ static void updateProjectiles(std::vector<Projectile>& shots,std::vector<Zombie>
             if(dx*dx+dz*dz<=0.62f*0.62f) {
                 z.health-=it->damage;
                 if(z.health<=0) { z.state=2; money+=30; }
+                impacts.push_back({z.x,z.z,0.22f,it->weapon});
                 hit=true; break;
             }
         }
