@@ -72,7 +72,8 @@ public final class NativeGameActivity extends Activity {
         frame.addView(surface, new FrameLayout.LayoutParams(-1, -1));
 
         TextView overlay = new TextView(this);
-        overlay.setText("APOCALYPSE • EXPLORAÇÃO\nJoystick: mover personagem");
+        overlay.setText("APOCALYPSE • EXPLORAÇÃO
+Joystick: mover personagem");
         overlay.setTextColor(Color.WHITE);
         overlay.setTextSize(13);
         overlay.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
@@ -135,7 +136,8 @@ public final class NativeGameActivity extends Activity {
         frame.addView(shopScroll,shopPanelParams);
 
         TextView shopTitle = new TextView(this);
-        shopTitle.setText("LOJA DE SOBREVIVÊNCIA\nLimpe a onda para ganhar bônus de dinheiro e itens!");
+        shopTitle.setText("LOJA DE SOBREVIVÊNCIA
+Limpe a onda para ganhar bônus de dinheiro e itens!");
         shopTitle.setTextColor(Color.WHITE);
         shopTitle.setTextSize(14);
         shopTitle.setPadding(4,4,4,8);
@@ -363,10 +365,12 @@ public final class NativeGameActivity extends Activity {
         private static native void nativeRender();
         private static native void nativeSetMove(float x, float z);
         private static native boolean nativeAttack();
-        private static native boolean nativePurchase(int item);\n        private static native boolean nativeSelectWeapon(int weapon);
+        private static native boolean nativePurchase(int item);
+        private static native boolean nativeSelectWeapon(int weapon);
         private static native String nativeGetHud();
         static void attack(){ nativeAttack(); }
-        static boolean purchase(int item){ return nativePurchase(item); }\n        static boolean selectWeapon(int weapon){ return nativeSelectWeapon(weapon); }
+        static boolean purchase(int item){ return nativePurchase(item); }
+        static boolean selectWeapon(int weapon){ return nativeSelectWeapon(weapon); }
         static String getHud(){ return nativeGetHud(); }
         static void setMove(float x,float z){nativeSetMove(x,z);}
         @Override public void onSurfaceCreated(GL10 gl, EGLConfig config) { nativeInit(assets); }
