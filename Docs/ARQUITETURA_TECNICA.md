@@ -158,3 +158,6 @@ Antes de ampliar o projeto, a primeira prova técnica deverá compilar um aplica
 - A câmera de terceira pessoa acompanha a direção recente do joystick para manter o cenário à frente do deslocamento no enquadramento.
 - A luz difusa principal do shader do cenário foi reduzida; materiais PBR importados e shaders de personagens ainda exigem calibração visual individual.
 - Nenhuma dessas alterações foi validada visualmente no Redmi 12 nesta etapa.
+
+- Acesso ao estado de sobrevivência compartilhado entre render thread e callbacks JNI agora é protegido por mutex; isso evita concorrência nas compras e no HUD.
+- Shader PBR dos modelos importados teve a luz ambiente e a intensidade direta reduzidas para conter superexposição; a calibração final depende de GPU/tela reais.
