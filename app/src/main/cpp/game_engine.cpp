@@ -75,7 +75,7 @@ float terrainHeight(float x,float z){
          + 0.025f*std::sin((x+z)*0.53f);
 }
 void addTerrain(){
-    const int cells=48; const float start=-30.0f, step=60.0f/(float)cells;
+    const int cells=144; const float start=-112.0f, step=224.0f/(float)cells;
     for(int ix=0;ix<cells;ix++) for(int iz=0;iz<cells;iz++){
         float x=start+ix*step,z=start+iz*step;
         float h1=terrainHeight(x,z),h2=terrainHeight(x+step,z);
@@ -178,6 +178,89 @@ void addResidentialDetails(){
     }
 }
 
+
+void addExplorableClinic(){
+    // Small ground-floor clinic with a real doorway and interior floor.
+    const float x=13.0f,z=10.5f,w=6.2f,d=6.0f,h=2.75f,t=0.22f,door=1.15f;
+    ground(x,z,w,d,0.34f,0.35f,0.33f,0.145f);
+    // Rear and side walls; front wall is split to leave a walkable entrance.
+    building(x,z+d-t,w,t,h,0.67f,0.68f,0.64f);
+    building(x,z,t,d,h,0.62f,0.64f,0.61f);
+    building(x+w-t,z,t,d,h,0.62f,0.64f,0.61f);
+    building(x,z,t,(w-door)*0.5f,h,0.67f,0.68f,0.64f);
+    building(x+(w+door)*0.5f,z,t,(w-door)*0.5f,h,0.67f,0.68f,0.64f);
+    // Interior partitions, reception counter, beds and storage.
+    building(x+2.75f,z+2.1f,0.14f,2.0f,2.25f,0.58f,0.59f,0.56f);
+    building(x+0.75f,z+1.1f,1.65f,0.62f,0.78f,0.42f,0.45f,0.43f);
+    building(x+3.65f,z+3.35f,1.35f,0.62f,0.42f,0.72f,0.73f,0.69f);
+    building(x+0.75f,z+4.35f,1.2f,0.72f,0.58f,0.43f,0.46f,0.44f);
+    // Exterior sign and awning.
+    ground(x+1.8f,z-0.38f,2.6f,0.22f,0.72f,0.76f,0.70f,2.25f);
+}
+void addForestRegion(){
+    // Contaminated woodland east of the metro; layered canopy and clearings.
+    ground(38.0f,-22.0f,42.0f,44.0f,0.12f,0.20f,0.12f,0.115f);
+    for(int i=0;i<88;i++){
+        float x=40.0f+(float)((i*17)%39);
+        float z=-20.0f+(float)((i*29)%40);
+        if((x>49.0f&&x<64.0f&&z>-7.0f&&z<8.0f)) continue;
+        organicTree(x,z,0.85f+0.12f*(i%5));
+        if(i%4==0) ellipsoid(world,x+0.4f,0.24f,z+0.25f,0.34f,0.18f,0.28f,0.22f,0.25f,0.18f,7,10);
+    }
+    // Forest service road and a derelict ranger outpost.
+    ground(28.0f,-2.1f,57.0f,4.2f,0.16f,0.17f,0.15f,0.145f);
+    detailedBuilding(57.0f,-3.8f,5.2f,4.4f,2.8f,0.31f,0.29f,0.22f,1);
+    building(55.9f,-4.4f,1.0f,0.7f,0.35f,0.23f,0.25f,0.19f);
+}
+void addMilitaryRegion(){
+    // Fenced military perimeter with hangar, barracks and watch posts.
+    ground(42.0f,-91.0f,39.0f,34.0f,0.23f,0.24f,0.22f,0.12f);
+    ground(28.0f,-65.0f,58.0f,4.0f,0.17f,0.18f,0.17f,0.15f);
+    detailedBuilding(51.0f,-88.0f,15.0f,9.0f,5.2f,0.31f,0.34f,0.35f,1);
+    detailedBuilding(44.0f,-77.0f,7.0f,4.2f,3.0f,0.38f,0.36f,0.29f,2);
+    detailedBuilding(65.0f,-77.0f,7.0f,4.2f,3.0f,0.38f,0.36f,0.29f,2);
+    for(int i=0;i<15;i++){
+        float x=43.0f+i*2.35f;
+        building(x,-92.0f,0.12f,0.12f,2.2f,0.32f,0.34f,0.31f);
+        building(x,-58.0f,0.12f,0.12f,2.2f,0.32f,0.34f,0.31f);
+    }
+    for(int i=0;i<7;i++){
+        float z=-90.0f+i*5.0f;
+        building(42.0f,z,0.12f,0.12f,2.2f,0.32f,0.34f,0.31f);
+        building(78.0f,z,0.12f,0.12f,2.2f,0.32f,0.34f,0.31f);
+    }
+    taperedCylinder(world,46.0f,0.12f,-86.0f,0.18f,0.12f,7.0f,0.35f,0.37f,0.35f,12);
+    ellipsoid(world,46.0f,7.2f,-86.0f,0.55f,0.32f,0.55f,0.38f,0.42f,0.38f,10,14);
+}
+void addRuralRegion(){
+    // Rural settlement southwest, connected by a secondary paved road.
+    ground(-93.0f,39.0f,42.0f,42.0f,0.27f,0.24f,0.16f,0.12f);
+    ground(-112.0f,29.0f,72.0f,3.8f,0.22f,0.20f,0.15f,0.15f);
+    for(int i=0;i<9;i++){
+        float x=-88.0f+(float)(i%3)*12.0f;
+        float z=45.0f+(float)(i/3)*11.0f;
+        detailedBuilding(x,z,5.2f,4.8f,2.8f+(i%2)*0.35f,0.49f,0.39f,0.27f,1);
+        building(x+5.5f,z+1.0f,2.8f,2.6f,1.8f,0.39f,0.30f,0.20f);
+        organicTree(x-2.0f,z+2.0f,0.9f);
+        organicTree(x+7.0f,z+5.0f,1.05f);
+    }
+    // Fields, crop rows and a small water channel.
+    for(int row=0;row<8;row++){
+        ground(-106.0f+row*4.2f,84.0f,0.22f,14.0f,0.31f,0.34f,0.16f,0.132f);
+    }
+    ground(-103.0f,98.0f,28.0f,2.0f,0.12f,0.25f,0.30f,0.13f);
+}
+void addConnectedRegions(){
+    addExplorableClinic();
+    // Continuous road corridors link the four authored districts.
+    ground(24.0f,-2.0f,22.0f,4.0f,0.15f,0.16f,0.15f,0.145f);
+    ground(44.0f,-66.0f,4.0f,66.0f,0.15f,0.16f,0.15f,0.145f);
+    ground(-88.0f,24.0f,112.0f,4.0f,0.20f,0.19f,0.15f,0.145f);
+    addForestRegion();
+    addMilitaryRegion();
+    addRuralRegion();
+}
+
 void addSidewalkNetwork(){
     // Main avenue sidewalks on both sides.
     sidewalkH(-24,-2.85f,48,0.65f); sidewalkH(-24,2.20f,48,0.65f);
@@ -242,6 +325,7 @@ void buildCity(){
     }
     addStreetDetails();
     addResidentialDetails();
+    addConnectedRegions();
 }
 
 bool collidesWithWorld(float x,float z){
@@ -256,9 +340,9 @@ bool collidesWithWorld(float x,float z){
 }
 void movePlayerWithCollision(float dx,float dz){
     // Resolve os eixos separadamente para permitir deslizar pelas paredes.
-    const float nextX=fmaxf(-28.0f,fminf(28.0f,playerX+dx));
+    const float nextX=fmaxf(-108.0f,fminf(108.0f,playerX+dx));
     if(!collidesWithWorld(nextX,playerZ)) playerX=nextX;
-    const float nextZ=fmaxf(-28.0f,fminf(28.0f,playerZ+dz));
+    const float nextZ=fmaxf(-108.0f,fminf(108.0f,playerZ+dz));
     if(!collidesWithWorld(playerX,nextZ)) playerZ=nextZ;
 }
 void addPlayerModel(){
@@ -354,7 +438,7 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     survival.update(dt,playerX,playerZ);
     glUseProgram(program);
     const float aspect=(float)surfaceWidth/(float)surfaceHeight;
-    const apocalypse::Mat4 projection=apocalypse::perspective(58.0f*3.14159265f/180.0f,aspect,0.10f,110.0f);
+    const apocalypse::Mat4 projection=apocalypse::perspective(58.0f*3.14159265f/180.0f,aspect,0.10f,240.0f);
     const apocalypse::Vec3 eye{playerX,7.5f,playerZ+9.5f};
     const apocalypse::Vec3 target{playerX,0.75f,playerZ-0.5f};
     const apocalypse::Mat4 view=apocalypse::lookAt(eye,target,{0.0f,1.0f,0.0f});
