@@ -15,6 +15,7 @@ static double androidGetCurrentTimeNanos(){struct timespec t{};clock_gettime(CLO
 namespace {
 struct Vertex { float x,y,z,r,g,b; };
 GLuint program=0, vertexBuffer=0, playerBuffer=0, survivalBuffer=0;
+GLuint surfaceTextures[3]={0,0,0};
 GLint vertexCount=0, playerVertexCount=0;
 int surfaceWidth=1, surfaceHeight=1;
 float playerX=0.0f, playerZ=0.0f, moveX=0.0f, moveZ=0.0f;
@@ -406,6 +407,24 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeInit(JNIEn
     if(linked!=GL_TRUE){char log[1024]={};glGetProgramInfoLog(program,sizeof(log),nullptr,log);LOGE("Program link: %s",log);glDeleteProgram(program);program=0;return;}
     buildCity();
     survival.reset();
+    // Three small tileable starter material maps generated in memory: no unused APK files.
+    const unsigned char base[3][3]={{48,72,43},{112,108,96},{48,52,56}};
+    for(int k=0;k<3;k++){
+        unsigned char pixels[64*64*3];
+        for(int y=0;y<64;y++)for(int x=0;x<64;x++){
+            unsigned int n=(unsigned int)((x*73856093u)^(y*19349663u)^(k*83492791u));
+            n^=n>>13;n*=1274126177u;n^=n>>16;
+            int grain=(int)(n%25u)-12;int at=(y*64+x)*3;
+            for(int c=0;c<3;c++)pixels[at+c]=(unsigned char)fmaxf(0.0f,fminf(255.0f,(float)base[k][c]+grain));
+        }
+        glGenTextures(1,&surfaceTextures[k]);glBindTexture(GL_TEXTURE_2D,surfaceTextures[k]);
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+        glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,64,64,0,GL_RGB,GL_UNSIGNED_BYTE,pixels);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
     glGenBuffers(1,&vertexBuffer);glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER,(GLsizeiptr)(world.size()*sizeof(Vertex)),world.data(),GL_STATIC_DRAW);
     vertexCount=(GLint)world.size();
@@ -437,6 +456,8 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     }
     survival.update(dt,playerX,playerZ);
     glUseProgram(program);
+    const char* texNames[3]={"uGrass","uConcrete","uAsphalt"};
+    for(int i=0;i<3;i++){glActiveTexture(GL_TEXTURE0+i);glBindTexture(GL_TEXTURE_2D,surfaceTextures[i]);glUniform1i(glGetUniformLocation(program,texNames[i]),i);}
     const float aspect=(float)surfaceWidth/(float)surfaceHeight;
     const apocalypse::Mat4 projection=apocalypse::perspective(58.0f*3.14159265f/180.0f,aspect,0.10f,240.0f);
     const apocalypse::Vec3 eye{playerX,7.5f,playerZ+9.5f};
@@ -449,6 +470,8 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer);
     glEnableVertexAttribArray(0);glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)0);
     glEnableVertexAttribArray(1);glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(2);glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(6*sizeof(float)));
+    glEnableVertexAttribArray(3);glVertexAttribPointer(3,1,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(8*sizeof(float)));
     glDrawArrays(GL_TRIANGLES,0,vertexCount);
     std::vector<Vertex> dynamicMesh;
     buildSurvivalMesh(dynamicMesh);
@@ -468,7 +491,7 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)0);
     glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(3*sizeof(float)));
     glDrawArrays(GL_TRIANGLES,0,playerVertexCount);
-    glDisableVertexAttribArray(0);glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(0);glDisableVertexAttribArray(1);glDisableVertexAttribArray(2);glDisableVertexAttribArray(3);
 }
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeAttack(JNIEnv*,jclass){
