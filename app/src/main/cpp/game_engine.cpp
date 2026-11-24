@@ -528,7 +528,7 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(6*sizeof(float)));
     glVertexAttribPointer(3,1,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(8*sizeof(float)));
     glDrawArrays(GL_TRIANGLES,0,playerVertexCount);
-    apocalypse::renderVerityCompanion(viewProjection.m,playerX+0.92f,playerZ+0.35f);
+    apocalypse::renderVerityCompanion(viewProjection.m,playerX+1.72f,playerZ+0.18f,length>0.01f);
     glDisableVertexAttribArray(0);glDisableVertexAttribArray(1);glDisableVertexAttribArray(2);glDisableVertexAttribArray(3);
 }
 extern "C" JNIEXPORT jboolean JNICALL
