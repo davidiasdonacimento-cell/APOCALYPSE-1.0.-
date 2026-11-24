@@ -48,15 +48,16 @@ bool ModelRenderer::initialize(AAssetManager* assets){
  for(int i=0;i<meshCount_;i++){auto& src=asset.meshes[i];auto& dst=meshes_[i];dst.indexCount=(GLsizei)src.indices.size();std::copy(src.material.baseColor,src.material.baseColor+4,dst.base);dst.metallic=src.material.metallic;dst.roughness=src.material.roughness;
   glGenBuffers(1,&dst.vertex);glBindBuffer(GL_ARRAY_BUFFER,dst.vertex);glBufferData(GL_ARRAY_BUFFER,src.vertices.size()*sizeof(ModelVertex),src.vertices.data(),GL_STATIC_DRAW);
   glGenBuffers(1,&dst.index);glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,dst.index);glBufferData(GL_ELEMENT_ARRAY_BUFFER,src.indices.size()*sizeof(uint32_t),src.indices.data(),GL_STATIC_DRAW);
-  dst.albedo=makeTexture(assets,src.material.albedoPath,0,src.material.name.c_str());dst.normal=makeTexture(assets,src.material.normalPath,1,src.material.name.c_str());dst.packedMetalRough=!src.material.metallicRoughnessPath.empty();\n  if(dst.packedMetalRough){dst.roughnessMap=makeTexture(assets,src.material.metallicRoughnessPath,4,src.material.name.c_str());dst.metallicMap=dst.roughnessMap;}\n  else{dst.roughnessMap=makeTexture(assets,src.material.roughnessPath,2,src.material.name.c_str());dst.metallicMap=makeTexture(assets,src.material.metallicPath,3,src.material.name.c_str());}
+  dst.albedo=makeTexture(assets,src.material.albedoPath,0,src.material.name.c_str());dst.normal=makeTexture(assets,src.material.normalPath,1,src.material.name.c_str());dst.packedMetalRough=!src.material.metallicRoughnessPath.empty();
+  if(dst.packedMetalRough){dst.roughnessMap=makeTexture(assets,src.material.metallicRoughnessPath,4,src.material.name.c_str());dst.metallicMap=dst.roughnessMap;}\n  else{dst.roughnessMap=makeTexture(assets,src.material.roughnessPath,2,src.material.name.c_str());dst.metallicMap=makeTexture(assets,src.material.metallicPath,3,src.material.name.c_str());}
  }
  MR_LOG("OBJ importado: %d submalhas",meshCount_);return meshCount_>0;
 }
 void ModelRenderer::render(const float* vp){
  if(!program_||meshCount_==0)return;glUseProgram(program_);glUniformMatrix4fv(glGetUniformLocation(program_,"uVP"),1,GL_FALSE,vp);
- const char* names[3]={"uAlbedo","uNormal","uMetalRough"};
- for(int i=0;i<meshCount_;i++){auto& m=meshes_[i];GLuint tex[3]={m.albedo,m.normal,m.metalRough};for(int k=0;k<3;k++){glActiveTexture(GL_TEXTURE0+k);glBindTexture(GL_TEXTURE_2D,tex[k]);glUniform1i(glGetUniformLocation(program_,names[k]),k);}
-  glUniform4fv(glGetUniformLocation(program_,"uBaseColor"),1,m.base);glUniform1f(glGetUniformLocation(program_,"uMetallic"),m.metallic);glUniform1f(glGetUniformLocation(program_,"uRoughness"),m.roughness);
+ const char* names[4]={"uAlbedo","uNormal","uRoughnessMap","uMetallicMap"};
+ for(int i=0;i<meshCount_;i++){auto& m=meshes_[i];GLuint tex[4]={m.albedo,m.normal,m.roughnessMap,m.metallicMap};for(int k=0;k<4;k++){glActiveTexture(GL_TEXTURE0+k);glBindTexture(GL_TEXTURE_2D,tex[k]);glUniform1i(glGetUniformLocation(program_,names[k]),k);}
+  glUniform1i(glGetUniformLocation(program_,"uPacked"),m.packedMetalRough?1:0);glUniform4fv(glGetUniformLocation(program_,"uBaseColor"),1,m.base);glUniform1f(glGetUniformLocation(program_,"uMetallic"),m.metallic);glUniform1f(glGetUniformLocation(program_,"uRoughness"),m.roughness);
   glBindBuffer(GL_ARRAY_BUFFER,m.vertex);glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m.index);
   glEnableVertexAttribArray(0);glEnableVertexAttribArray(1);glEnableVertexAttribArray(2);
   glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,sizeof(ModelVertex),(void*)offsetof(ModelVertex,position));
