@@ -29,8 +29,8 @@ void SurvivalSystem::update(float dt,float px,float pz) {
         z.attackCooldown=std::max(0.0f,z.attackCooldown-dt);
         const float d2=distance2(z.x,z.z,px,pz);
         if(d2<100.0f) z.state=1; else z.state=0;
+        z.patrolPhase+=dt*(z.state==1?2.8f:0.7f);
         if(z.state==0) {
-            z.patrolPhase+=dt;
             z.x+=std::sin(z.patrolPhase*0.7f)*0.22f*dt;
             z.z+=std::cos(z.patrolPhase*0.7f)*0.22f*dt;
         }
