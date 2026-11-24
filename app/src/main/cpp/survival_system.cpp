@@ -25,7 +25,7 @@ void SurvivalSystem::reset() {
 void SurvivalSystem::update(float dt,float px,float pz) {
     lastPlayerX=px; lastPlayerZ=pz;
     dt=std::max(0.0f,std::min(dt,0.05f));
-    pulseCooldown=std::max(0.0f,pulseCooldown-dt);
+    pulseCooldown=std::max(0.0f,pulseCooldown-dt);\n    updateProjectiles(projectileList,zombieList,dt,moneyCount);
     for(auto& z:zombieList) {
         if(z.state==2) continue;
         z.attackCooldown=std::max(0.0f,z.attackCooldown-dt);
@@ -77,29 +77,68 @@ void SurvivalSystem::spawnWave() {
     }
 }
 bool SurvivalSystem::usePulse(float px,float pz) {
+    return fireWeapon(px,pz,0.0f,-1.0f);
+}
+bool SurvivalSystem::fireWeapon(float px,float pz,float dirX,float dirZ) {
     if(pulseCooldown>0.0f || playerHealth<=0) return false;
-    int damage=pulseDamage;
-    float range=2.3f;
-    float cooldown=0.55f;
+    const float len=std::sqrt(dirX*dirX+dirZ*dirZ);
+    if(len<0.001f) return false;
+    dirX/=len; dirZ/=len;
     int* ammo=nullptr;
-    if(activeWeapon==1) { damage=2; range=10.0f; cooldown=0.72f; ammo=&shurikenAmmo; }
-    else if(activeWeapon==2) { damage=2; range=18.0f; cooldown=0.22f; ammo=&rifleAmmo; }
-    else if(activeWeapon==3) { damage=4; range=5.5f; cooldown=0.85f; ammo=&shotgunAmmo; }
+    float range=2.3f, speed=0.0f, cooldown=0.55f;
+    int damage=pulseDamage;
+    if(activeWeapon==1) { range=10.0f; speed=14.0f; cooldown=0.72f; damage=2; ammo=&shurikenAmmo; }
+    else if(activeWeapon==2) { range=18.0f; speed=42.0f; cooldown=0.22f; damage=2; ammo=&rifleAmmo; }
+    else if(activeWeapon==3) { range=5.5f; speed=24.0f; cooldown=0.85f; damage=1; ammo=&shotgunAmmo; }
     if(ammo && *ammo<=0) return false;
     pulseCooldown=cooldown;
     if(ammo) --(*ammo);
-    int target=-1; float best=range*range;
-    for(size_t i=0;i<zombieList.size();++i) {
-        const auto& z=zombieList[i];
-        if(z.state==2) continue;
-        const float d=distance2(z.x,z.z,px,pz);
-        if(d<best) { best=d; target=(int)i; }
+    if(activeWeapon==0) {
+        int target=-1; float best=range*range;
+        for(size_t i=0;i<zombieList.size();++i) {
+            const auto& z=zombieList[i]; if(z.state==2) continue;
+            const float rx=z.x-px, rz=z.z-pz;
+            const float along=rx*dirX+rz*dirZ;
+            const float side=std::fabs(rx*dirZ-rz*dirX);
+            if(along>=0.0f && along<=range && side<0.75f && along*along<best) {
+                best=along*along; target=(int)i;
+            }
+        }
+        if(target>=0) {
+            auto& z=zombieList[(size_t)target]; z.health-=damage;
+            if(z.health<=0) { z.state=2; moneyCount+=30; }
+        }
+        return true;
     }
-    if(target<0) return true;
-    auto& z=zombieList[(size_t)target];
-    z.health-=damage;
-    if(z.health<=0) { z.state=2; moneyCount+=30; }
+    const int pelletCount=(activeWeapon==3)?5:1;
+    for(int i=0;i<pelletCount;i++) {
+        const float spread=pelletCount>1?((float)i-2.0f)*0.055f:0.0f;
+        const float cs=std::cos(spread), sn=std::sin(spread);
+        const float dx=dirX*cs-dirZ*sn, dz=dirX*sn+dirZ*cs;
+        projectileList.push_back({px,pz,dx,dz,0.0f,range,speed,damage,activeWeapon});
+    }
     return true;
+}
+static void updateProjectiles(std::vector<Projectile>& shots,std::vector<Zombie>& zombies,
+                              float dt,int& money) {
+    for(auto it=shots.begin();it!=shots.end();) {
+        const float step=std::min(it->speed*dt,it->maxRange-it->travelled);
+        const float oldX=it->x, oldZ=it->z;
+        it->x+=it->dirX*step; it->z+=it->dirZ*step; it->travelled+=step;
+        bool hit=false;
+        for(auto& z:zombies) {
+            if(z.state==2) continue;
+            const float sx=it->x-oldX, sz=it->z-oldZ, seg2=sx*sx+sz*sz;
+            const float t=seg2>0.000001f?std::max(0.0f,std::min(1.0f,((z.x-oldX)*sx+(z.z-oldZ)*sz)/seg2)):0.0f;
+            const float dx=z.x-(oldX+sx*t), dz=z.z-(oldZ+sz*t);
+            if(dx*dx+dz*dz<=0.62f*0.62f) {
+                z.health-=it->damage;
+                if(z.health<=0) { z.state=2; money+=30; }
+                hit=true; break;
+            }
+        }
+        if(hit || it->travelled>=it->maxRange) it=shots.erase(it); else ++it;
+    }
 }
 bool SurvivalSystem::purchase(int item) {
     if(item==0) {
