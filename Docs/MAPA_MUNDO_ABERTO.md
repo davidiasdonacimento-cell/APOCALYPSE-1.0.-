@@ -89,3 +89,11 @@ A primeira entrega técnica será apenas a base espacial da metrópole: terreno,
 - Materiais iniciais: vegetação, concreto e asfalto, com repetição controlada por escala espacial e mipmaps.
 - Texturas iniciais são padrões procedurais 64 × 64 gerados em memória; não representam ainda materiais fotográficos de alta resolução.
 - Modelos externos com UVs, texturas artísticas reais e materiais PBR continuam pendentes.
+
+## Primeiro modelo OBJ renderizado com materiais PBR — 24/11/2026
+- O pacote de assets da primeira região inclui `models/apocalypse_hospital.obj` e seu MTL, como prova de integração do importador no mundo.
+- O modelo é carregado pelo `AssetManager`, enviado a buffers OpenGL e renderizado após o terreno/cenário procedural.
+- Concreto, vidro e metal usam parâmetros de albedo, rugosidade e metalicidade; o shader aplica normal mapping e iluminação Cook–Torrance/GGX.
+- O pipeline aceita mapas de textura declarados no material; quando ausentes, usa mapas compactos gerados em memória. Texturas fotográficas/artísticas de alta resolução ainda não foram entregues.
+- O hospital importado é um asset inicial de integração; os demais prédios, interiores e regiões continuam aguardando substituição gradual por modelos artísticos.
+- Teste visual no Android e validação de desempenho continuam pendentes.
