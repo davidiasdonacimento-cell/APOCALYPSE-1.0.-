@@ -150,8 +150,8 @@ GLuint makeShader(GLenum type,const char* src){
 }
 void init(){
     program=0;buffer=0;count=0;
-    const char* vs="#version 300 es\nlayout(location=0) in vec3 aPos;layout(location=1) in vec3 aColor;uniform mat4 uMVP;out vec3 color;void main(){gl_Position=uMVP*vec4(aPos,1.0);color=aColor;}";
-    const char* fs="#version 300 es\nprecision mediump float;in vec3 color;out vec4 fragColor;void main(){fragColor=vec4(color*0.92,1.0);}";
+    const char* vs="#version 300 es\nlayout(location=0) in vec3 aPos;layout(location=1) in vec3 aColor;uniform mat4 uMVP;out vec3 color;out vec3 worldPosition;void main(){worldPosition=aPos;gl_Position=uMVP*vec4(aPos,1.0);color=aColor;}";
+    const char* fs="#version 300 es\nprecision highp float;in vec3 color;in vec3 worldPosition;out vec4 fragColor;void main(){vec3 N=normalize(cross(dFdx(worldPosition),dFdy(worldPosition)));vec3 L=normalize(vec3(-0.38,0.82,0.42));float diffuse=0.30+0.70*abs(dot(N,L));vec3 lit=color*diffuse*0.96;fragColor=vec4(lit,1.0);}";
     GLuint a=makeShader(GL_VERTEX_SHADER,vs),b=makeShader(GL_FRAGMENT_SHADER,fs);if(!a||!b)return;
     program=glCreateProgram();glAttachShader(program,a);glAttachShader(program,b);glLinkProgram(program);glDeleteShader(a);glDeleteShader(b);
     GLint ok=0;glGetProgramiv(program,GL_LINK_STATUS,&ok);
@@ -179,11 +179,11 @@ void draw(float dt){
 
 namespace apocalypse {
 void initializeVerityCompanion(){ init(); }
-void renderVerityCompanion(const float* viewProjection,float x,float z){
+void renderVerityCompanion(const float* viewProjection,float x,float z,bool walking){
     if(!program) return;
     elapsed+=1.0f/60.0f;
     const int previousMode=animationMode;
-    animationMode=3;
+    animationMode=walking?3:0;
     buildCharacter(elapsed,false);
     animationMode=previousMode;
     if(!buffer) glGenBuffers(1,&buffer);
