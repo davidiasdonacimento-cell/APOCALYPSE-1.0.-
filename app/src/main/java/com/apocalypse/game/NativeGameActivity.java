@@ -34,7 +34,7 @@ public final class NativeGameActivity extends Activity {
     @Override protected void onResume() { super.onResume(); if (surface != null) surface.onResume(); }
     @Override protected void onPause() { if (surface != null) surface.onPause(); super.onPause(); }
 
-    private static final class GameSurface extends GLSurfaceView {
+    private final class GameSurface extends GLSurfaceView {
         GameSurface() {
             super(NativeGameActivity.this);
             setEGLContextClientVersion(3);
