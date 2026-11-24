@@ -119,7 +119,7 @@ Um recurso só será considerado concluído quando estiver implementado, integra
 - Base declarada: Java + C++17 + OpenGL ES 3.0 + Gradle + CMake.
 - Cena nativa contém um blockout urbano procedural, personagem de teste, joystick e câmera de acompanhamento.
 - Fase 3 tem módulo C++ separado para zumbis, estados de patrulha/perseguição, vida, coleta de recursos e combate arcade fictício; HUD e botão de pulso foram ligados à Activity Android.
-- Lobby atual é uma tela de menu Android; não é ainda um lobby 3D com Verity visível e animações.
+- `VerityLobbyActivity` adiciona cutscene de entrada, lobby pré-partida, ilustração 2D temporária de Verity, botão de mensagens, aceno e início explícito da partida. O lobby 3D com personagem rigada ainda está pendente.
 - Verity tem uma Activity separada de conversa/voz; não é uma personagem 3D animada.
-- Interações de lobby com Verity continuam pendentes conforme Docs/LOBBY_VERITY_INTERACOES.md.
+- Interações avançadas (proximidade real, movimento até Verity e animações 3D) continuam pendentes conforme Docs/LOBBY_VERITY_INTERACOES.md.
 - Compilação Android, teste no aparelho e APK: ainda não validados/gerados.
