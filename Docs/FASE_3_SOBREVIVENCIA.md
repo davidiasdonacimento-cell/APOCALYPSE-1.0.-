@@ -79,3 +79,12 @@ Os nomes são propostas e devem ser adaptados à estrutura real existente após 
 - A fase procedural avança tanto em patrulha quanto em perseguição e anima braços/pernas com uma oscilação simples.
 - Limitação: isso ainda é um modelo low-poly procedural, não um personagem escaneado ou asset artístico rigado. Skinning e animação esquelética completa continuam pendentes.
 - A nova malha precisa de compilação e teste visual no Redmi 12 antes de ser considerada validada.
+
+
+## Economia e loja durante a partida — 24/11/2026
+- Cada zumbi derrotado concede $30 uma única vez, quando sua vida chega a zero.
+- A loja da partida oferece cura imediata (+40 de vida por $50), melhoria de pulso (+1 de dano por $120, até nível 3) e colete (+2 de redução do dano recebido por nível, por $90, até nível 3).
+- As compras são validadas no módulo nativo; saldo insuficiente e níveis máximos recusam a transação. O HUD mostra o saldo.
+- Saldo e melhorias são mantidos apenas durante a sessão atual; persistência entre partidas/fechamento ainda não foi implementada.
+- A quantidade inicial continua limitada às quatro entidades existentes; não há reaparecimento de zumbis nesta etapa.
+- A loja foi integrada à Activity Android por JNI; compilação e teste real no Redmi 12 ainda são necessários.
