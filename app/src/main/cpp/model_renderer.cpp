@@ -68,5 +68,5 @@ void ModelRenderer::render(const float* vp){
  }
  glDisableVertexAttribArray(0);glDisableVertexAttribArray(1);glDisableVertexAttribArray(2);
 }
-void ModelRenderer::shutdown(){for(int i=0;i<meshCount_;i++){auto& m=meshes_[i];glDeleteBuffers(1,&m.vertex);glDeleteBuffers(1,&m.index);GLuint t[4]={m.albedo,m.normal,m.roughnessMap,m.metallicMap};if(m.packedMetalRough){glDeleteTextures(1,&m.roughnessMap);}else{glDeleteTextures(1,&m.roughnessMap);glDeleteTextures(1,&m.metallicMap);}glDeleteTextures(2,t);}if(program_)glDeleteProgram(program_);program_=0;meshCount_=0;}
+void ModelRenderer::shutdown(){for(int i=0;i<meshCount_;i++){auto& m=meshes_[i];glDeleteBuffers(1,&m.vertex);glDeleteBuffers(1,&m.index);glDeleteTextures(1,&m.albedo);glDeleteTextures(1,&m.normal);glDeleteTextures(1,&m.roughnessMap);if(!m.packedMetalRough)glDeleteTextures(1,&m.metallicMap);}if(program_)glDeleteProgram(program_);program_=0;meshCount_=0;}
 }
