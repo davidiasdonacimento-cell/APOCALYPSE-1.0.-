@@ -11,6 +11,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.Toast;
 import android.os.Handler;
 import android.os.Looper;
@@ -123,11 +124,15 @@ public final class NativeGameActivity extends Activity {
         shopPanel.setPadding(12,12,12,12);
         shopPanel.setBackgroundColor(0xEE101B2A);
         shopPanel.setVisibility(View.GONE);
+        ScrollView shopScroll = new ScrollView(this);
+        shopScroll.setFillViewport(true);
+        shopScroll.addView(shopPanel);
         FrameLayout.LayoutParams shopPanelParams = new FrameLayout.LayoutParams(
-            (int)(250*getResources().getDisplayMetrics().density),-2,
+            (int)(270*getResources().getDisplayMetrics().density),
+            (int)(getResources().getDisplayMetrics().heightPixels*0.72f),
             Gravity.CENTER|Gravity.END);
         shopPanelParams.setMargins(0,0,12,0);
-        frame.addView(shopPanel,shopPanelParams);
+        frame.addView(shopScroll,shopPanelParams);
 
         TextView shopTitle = new TextView(this);
         shopTitle.setText("LOJA DE SOBREVIVÊNCIA\nLimpe a onda para ganhar bônus de dinheiro e itens!");
