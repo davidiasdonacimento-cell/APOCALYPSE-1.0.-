@@ -85,6 +85,8 @@ O APOCALYPSE deve adaptar os padrões adequados, sem copiar contas, loja, regras
 
 - Auditoria comparativa BATTLE/APOCALYPSE: concluída em 24/11/2026.
 - Roadmap técnico: documentado.
-- Alterações de código desta etapa: nenhuma.
-- Build e teste no Redmi 12 desta etapa: não executados.
-- Próxima implementação de código: Etapa A, começando por renderer em perspectiva, matemática 3D e pipeline de malhas/iluminação; preservar os sistemas de sobrevivência existentes.
+- Etapa A — primeiro incremento de código enviado: `math3d.h` com matrizes 4x4, perspectiva, câmera look-at e translação; `game_engine.cpp` agora usa câmera de terceira pessoa em perspectiva e iluminação direcional calculada no shader.
+- A cidade, os zumbis, os itens e o jogador continuam usando a geometria procedural existente; ainda não há modelos artísticos/texturas de alta resolução nem pacote de conteúdo externo.
+- Build CI após esta alteração: aguardando resultado.
+- Teste físico no Redmi 12: pendente.
+- Próximo incremento: melhorar a malha do cenário e do personagem com geometria reutilizável, sem inflar o APK com arquivos sem uso.
