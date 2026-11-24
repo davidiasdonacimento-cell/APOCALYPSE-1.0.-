@@ -1,0 +1,90 @@
+# Plano de evolução visual e jogável — APOCALYPSE
+
+**Objetivo:** elevar o APOCALYPSE progressivamente ao padrão técnico e de acabamento observado no BATTLE UNIVERSE, mantendo identidade própria de sobrevivência zumbi. Este documento é um plano de engenharia; itens não são considerados implementados até existirem no código, compilarem e passarem por teste.
+
+## Referência técnica auditada no BATTLE UNIVERSE
+
+A inspeção do repositório BATTLE confirmou:
+- Renderização 3D em perspectiva com matrizes de projeção, câmera e transformações.
+- Malhas reutilizáveis (cubos, esferas, cilindros e cones), VBOs e normais para iluminação.
+- Shaders com iluminação difusa e especular.
+- Personagem com estados de animação procedurais e seleção visual.
+- Controles multitoque com joystick, câmera independente e botões simultâneos.
+- HUD posicionada em canvas de design 1280x720 com conversão de coordenadas para telas panorâmicas.
+- Sistemas de partida, bots, coleta, estatísticas e configurações separados por estado.
+- Pacote de conteúdo externo com verificação de integridade; o conteúdo só deve aumentar quando for realmente consumido pelo jogo.
+
+O APOCALYPSE deve adaptar os padrões adequados, sem copiar contas, loja, regras de Battle Royale ou conteúdo exclusivo do BATTLE. O repositório BATTLE não deve ser alterado.
+
+## Auditoria honesta do APOCALYPSE
+
+- O renderer de gameplay atual usa projeção isométrica simplificada, geometria procedural e cores por vértice.
+- A cidade atual é um blockout; não possui materiais PBR, modelos artísticos, colisões completas ou carregamento por chunks.
+- O personagem jogável é composto por blocos e ainda não possui controle completo de orientação e animação.
+- Os controles atuais são um joystick e um botão de pulso; ainda não têm câmera independente e multitouch completo.
+- A cena da Verity usa geometria procedural low-poly. A caminhada é demonstrativa no lugar; não existe skinning por pesos nem sincronização labial por fonemas.
+- A sobrevivência está integrada ao código, mas ainda não passou por compilação e teste físico documentados.
+- A primeira compilação de CI foi pequena e não representa conteúdo visual completo. Não aumentar tamanho artificialmente.
+
+## Padrão de qualidade e regras
+
+1. Cada sistema deve ter responsabilidade clara e interfaces pequenas.
+2. Não colocar o jogo inteiro em um único arquivo.
+3. Preservar orientação landscape e o fluxo lobby -> Verity -> partida.
+4. Projetar para Android intermediário: limites de entidades, distância de renderização, LOD, carregamento por chunks e controle de memória.
+5. Toda tela e controle deve funcionar em proporções panorâmicas diferentes; entrada multitoque deve permitir mover, girar a câmera e acionar controles simultaneamente.
+6. Não adicionar assets de demonstração só para inflar APK. Cada asset precisa ser usado e ter licença/origem apropriada.
+7. Não declarar uma etapa pronta por existir código. Exigir build CI, inspeção do APK, testes automatizados possíveis e teste físico no Redmi 12 quando disponível.
+8. Preservar APIs, arquivos e dados existentes; antes de qualquer alteração, reler a documentação relevante e buscar os arquivos atuais no GitHub.
+
+## Roadmap incremental
+
+### Etapa A — fundação gráfica 3D
+- Substituir a projeção isométrica por câmera em perspectiva e câmera de terceira pessoa.
+- Criar biblioteca de matemática 3D e transformações compartilhadas.
+- Criar malhas reutilizáveis com normais, buffers estáticos e shaders de iluminação.
+- Separar renderização de terreno, cenário, personagem, entidades e HUD.
+- Implementar ciclo de vida GL seguro (recriar recursos após perda do contexto).
+**Aceitação:** cena em perspectiva estável, profundidade correta, sem vazamento de buffers, build ARM64/ARMv7.
+
+### Etapa B — personagem e controles
+- Modelo de personagem com proporções consistentes, orientação e animações idle/walk/run.
+- Movimento relativo à câmera, rotação suave e colisão com cenário.
+- Joystick esquerdo, câmera por arraste no lado direito e botões multitouch.
+- HUD responsiva em canvas 1280x720, adaptada ao aspecto real da tela.
+**Aceitação:** mover e girar a câmera ao mesmo tempo, sem perder toques; personagem não atravessa obstáculos.
+
+### Etapa C — primeira região realmente jogável
+- Metrópole com módulos de rua, calçada, edifícios, interiores selecionados e pontos de referência.
+- Colisões e navegação separadas da malha visual.
+- Sistema de chunks com carregamento/descarregamento por distância.
+- Iluminação, neblina e atmosfera com qualidade configurável.
+**Aceitação:** explorar a área sem atravessar prédios, sem carregar o mundo inteiro e sem travamentos prolongados.
+
+### Etapa D — sobrevivência
+- Zumbis com estados limitados e previsíveis, navegação simplificada e animações.
+- Vida, recursos, coleta contextual, inventário e objetivos.
+- Combate fictício com feedback não gráfico, cooldowns e balanceamento.
+- Persistência local versionada.
+**Aceitação:** ciclo completo de exploração, coleta, encontro, objetivo e retorno; sem duplicação de itens nem valores inválidos.
+
+### Etapa E — lobby e Verity
+- Lobby 3D com cenário, iluminação, câmera, personagem e interface landscape.
+- Rig de personagem adequado, animações conectadas ao deslocamento e expressões básicas.
+- Conversa com gateway, estados de carregamento/erro e retorno ao lobby sem perder contexto.
+- Começar partida apenas por ação explícita.
+**Aceitação:** abrir lobby, conversar, voltar e iniciar partida repetidamente sem crash ou perda de estado.
+
+### Etapa F — conteúdo, otimização e acabamento
+- Pacote de assets versionado com SHA-256, extração segura e verificação de espaço.
+- LOD, frustum culling, instancing quando adequado, limites de memória e qualidade configurável.
+- Áudio, opções gráficas, salvamento e telemetria local de desempenho sem dados sensíveis.
+**Aceitação:** APK verificado, tamanho explicado pelo conteúdo real, desempenho medido e teste no aparelho.
+
+## Estado inicial desta evolução
+
+- Auditoria comparativa BATTLE/APOCALYPSE: concluída em 24/11/2026.
+- Roadmap técnico: documentado.
+- Alterações de código desta etapa: nenhuma.
+- Build e teste no Redmi 12 desta etapa: não executados.
+- Próxima implementação de código: Etapa A, começando por renderer em perspectiva, matemática 3D e pipeline de malhas/iluminação; preservar os sistemas de sobrevivência existentes.
