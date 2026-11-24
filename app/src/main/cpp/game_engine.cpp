@@ -9,6 +9,7 @@
 #include <cstdio>
 #include "survival_system.h"
 #include "math3d.h"
+#include "verity_companion.h"
 static double androidGetCurrentTimeNanos(){struct timespec t{};clock_gettime(CLOCK_MONOTONIC,&t);return (double)t.tv_sec*1000000000.0+(double)t.tv_nsec;}
 
 #define LOG_TAG "APOCALYPSE_ENGINE"
@@ -353,15 +354,36 @@ void movePlayerWithCollision(float dx,float dz){
 }
 void addPlayerModel(){
     playerMesh.clear();
-    // Silhueta humana arredondada: botas, pernas, tronco, braços e cabeça.
-    ellipsoid(playerMesh,-0.12f,0.20f,0.0f,0.13f,0.20f,0.15f,0.10f,0.11f,0.13f);
-    ellipsoid(playerMesh, 0.12f,0.20f,0.0f,0.13f,0.20f,0.15f,0.10f,0.11f,0.13f);
-    taperedCylinder(playerMesh,-0.12f,0.28f,0.0f,0.105f,0.12f,0.34f,0.20f,0.23f,0.25f);
-    taperedCylinder(playerMesh, 0.12f,0.28f,0.0f,0.105f,0.12f,0.34f,0.20f,0.23f,0.25f);
-    ellipsoid(playerMesh,0.0f,0.78f,0.0f,0.30f,0.34f,0.20f,0.19f,0.34f,0.28f,12,16);
-    ellipsoid(playerMesh,-0.36f,0.73f,0.0f,0.105f,0.31f,0.12f,0.68f,0.52f,0.37f);
-    ellipsoid(playerMesh, 0.36f,0.73f,0.0f,0.105f,0.31f,0.12f,0.68f,0.52f,0.37f);
-    ellipsoid(playerMesh,0.0f,1.22f,0.0f,0.17f,0.20f,0.16f,0.72f,0.57f,0.42f,12,16);
+    // Sobrevivente: botas reforçadas, calça, joelheiras e jaqueta em camadas.
+    ellipsoid(playerMesh,-0.13f,0.13f,-0.035f,0.16f,0.12f,0.24f,0.075f,0.085f,0.09f);
+    ellipsoid(playerMesh, 0.13f,0.13f,-0.035f,0.16f,0.12f,0.24f,0.075f,0.085f,0.09f);
+    taperedCylinder(playerMesh,-0.13f,0.24f,0.0f,0.105f,0.12f,0.31f,0.20f,0.24f,0.19f);
+    taperedCylinder(playerMesh, 0.13f,0.24f,0.0f,0.105f,0.12f,0.31f,0.20f,0.24f,0.19f);
+    ellipsoid(playerMesh,-0.13f,0.48f,0.0f,0.13f,0.09f,0.13f,0.12f,0.16f,0.13f);
+    ellipsoid(playerMesh, 0.13f,0.48f,0.0f,0.13f,0.09f,0.13f,0.12f,0.16f,0.13f);
+    ellipsoid(playerMesh,0.0f,0.76f,0.0f,0.29f,0.20f,0.19f,0.15f,0.19f,0.15f,12,16);
+    ellipsoid(playerMesh,0.0f,0.91f,0.0f,0.32f,0.28f,0.21f,0.22f,0.29f,0.22f,14,18);
+    // Colete, bolsos, zíper e alças frontais.
+    ellipsoid(playerMesh,0.0f,0.91f,-0.155f,0.235f,0.23f,0.075f,0.12f,0.16f,0.14f,10,14);
+    ellipsoid(playerMesh,-0.13f,0.79f,-0.222f,0.075f,0.075f,0.035f,0.35f,0.31f,0.20f);
+    ellipsoid(playerMesh, 0.13f,0.79f,-0.222f,0.075f,0.075f,0.035f,0.35f,0.31f,0.20f);
+    ellipsoid(playerMesh,0.0f,0.91f,-0.232f,0.012f,0.19f,0.012f,0.58f,0.53f,0.36f,6,8);
+    // Mochila compacta visível por trás do ombro.
+    ellipsoid(playerMesh,0.0f,0.92f,0.205f,0.22f,0.29f,0.13f,0.11f,0.15f,0.13f,10,12);
+    ellipsoid(playerMesh,-0.37f,0.88f,0.0f,0.12f,0.20f,0.13f,0.19f,0.25f,0.19f);
+    ellipsoid(playerMesh, 0.37f,0.88f,0.0f,0.12f,0.20f,0.13f,0.19f,0.25f,0.19f);
+    taperedCylinder(playerMesh,-0.38f,0.52f,0.0f,0.085f,0.075f,0.29f,0.20f,0.25f,0.19f);
+    taperedCylinder(playerMesh, 0.38f,0.52f,0.0f,0.085f,0.075f,0.29f,0.20f,0.25f,0.19f);
+    ellipsoid(playerMesh,-0.38f,0.48f,-0.01f,0.09f,0.08f,0.09f,0.12f,0.13f,0.11f);
+    ellipsoid(playerMesh, 0.38f,0.48f,-0.01f,0.09f,0.08f,0.09f,0.12f,0.13f,0.11f);
+    ellipsoid(playerMesh,0.0f,1.22f,0.0f,0.17f,0.20f,0.16f,0.70f,0.53f,0.39f,12,16);
+    // Cabelo, orelhas e traços do rosto voltados para a direção de avanço.
+    ellipsoid(playerMesh,0.0f,1.36f,0.015f,0.18f,0.10f,0.17f,0.13f,0.10f,0.075f,10,14);
+    ellipsoid(playerMesh,-0.17f,1.24f,0.015f,0.045f,0.12f,0.12f,0.13f,0.10f,0.075f);
+    ellipsoid(playerMesh, 0.17f,1.24f,0.015f,0.045f,0.12f,0.12f,0.13f,0.10f,0.075f);
+    ellipsoid(playerMesh,-0.065f,1.25f,-0.145f,0.018f,0.014f,0.012f,0.07f,0.08f,0.07f,6,8);
+    ellipsoid(playerMesh, 0.065f,1.25f,-0.145f,0.018f,0.014f,0.012f,0.07f,0.08f,0.07f,6,8);
+    ellipsoid(playerMesh,0.0f,1.20f,-0.16f,0.025f,0.035f,0.025f,0.58f,0.40f,0.31f,6,8);
 }
 
 
@@ -403,7 +425,7 @@ GLuint compileShader(GLenum type,const char* src){
 extern "C" JNIEXPORT void JNICALL
 Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeInit(JNIEnv* env,jclass,jobject javaAssets){
     const char* vs="#version 300 es\nlayout(location=0) in vec3 aPos; layout(location=1) in vec3 aColor; layout(location=2) in vec2 aUV; layout(location=3) in float aMaterial; uniform mat4 uMVP; out vec3 color; out vec3 worldPosition; out vec2 uv; flat out int materialId; void main(){worldPosition=aPos;gl_Position=uMVP*vec4(aPos,1.0);color=aColor;uv=aUV;materialId=int(aMaterial+0.5);}";
-    const char* fs="#version 300 es\nprecision mediump float;in vec3 color;in vec3 worldPosition;in vec2 uv;flat in int materialId;uniform sampler2D uGrass;uniform sampler2D uConcrete;uniform sampler2D uAsphalt;out vec4 fragColor;void main(){vec3 texel=vec3(1.0);if(materialId==0)texel=texture(uGrass,uv).rgb;else if(materialId==1)texel=texture(uConcrete,uv).rgb;else if(materialId==2)texel=texture(uAsphalt,uv).rgb;vec3 normal=normalize(cross(dFdx(worldPosition),dFdy(worldPosition)));vec3 lightDir=normalize(vec3(-0.35,0.82,0.44));float diffuse=0.46+0.54*abs(dot(normal,lightDir));float distanceFog=clamp((gl_FragCoord.z-0.90)*2.8,0.0,0.20);vec3 lit=color*texel*diffuse;vec3 fog=vec3(0.10,0.14,0.16);fragColor=vec4(mix(lit,fog,distanceFog),1.0);}";
+    const char* fs="#version 300 es\nprecision mediump float;in vec3 color;in vec3 worldPosition;in vec2 uv;flat in int materialId;uniform sampler2D uGrass;uniform sampler2D uConcrete;uniform sampler2D uAsphalt;out vec4 fragColor;void main(){vec3 texel=vec3(1.0);if(materialId==0)texel=texture(uGrass,uv).rgb;else if(materialId==1)texel=texture(uConcrete,uv).rgb;else if(materialId==2)texel=texture(uAsphalt,uv).rgb;vec3 normal=normalize(cross(dFdx(worldPosition),dFdy(worldPosition)));vec3 lightDir=normalize(vec3(-0.35,0.82,0.44));float diffuse=0.25+0.48*abs(dot(normal,lightDir));float distanceFog=clamp((gl_FragCoord.z-0.90)*2.8,0.0,0.20);vec3 lit=color*texel*diffuse*0.88;vec3 fog=vec3(0.10,0.14,0.16);fragColor=vec4(mix(lit,fog,distanceFog),1.0);}";
     GLuint a=compileShader(GL_VERTEX_SHADER,vs),b=compileShader(GL_FRAGMENT_SHADER,fs);
     if(!a||!b)return;
     program=glCreateProgram();glAttachShader(program,a);glAttachShader(program,b);glLinkProgram(program);
@@ -413,6 +435,7 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeInit(JNIEn
     buildCity();
     survival.reset();
     if(!importedModels.initialize(AAssetManager_fromJava(env,javaAssets))) LOGE("Falha ao inicializar modelos OBJ/PBR");
+    apocalypse::initializeVerityCompanion();
     // Three small tileable starter material maps generated in memory: no unused APK files.
     const unsigned char base[3][3]={{48,72,43},{112,108,96},{48,52,56}};
     for(int k=0;k<3;k++){
@@ -466,8 +489,8 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     for(int i=0;i<3;i++){glActiveTexture(GL_TEXTURE0+i);glBindTexture(GL_TEXTURE_2D,surfaceTextures[i]);glUniform1i(glGetUniformLocation(program,texNames[i]),i);}
     const float aspect=(float)surfaceWidth/(float)surfaceHeight;
     const apocalypse::Mat4 projection=apocalypse::perspective(58.0f*3.14159265f/180.0f,aspect,0.10f,240.0f);
-    const apocalypse::Vec3 eye{playerX,7.5f,playerZ+9.5f};
-    const apocalypse::Vec3 target{playerX,0.75f,playerZ-0.5f};
+    const apocalypse::Vec3 eye{playerX+0.72f,2.85f,playerZ+4.65f};
+    const apocalypse::Vec3 target{playerX,1.02f,playerZ-0.72f};
     const apocalypse::Mat4 view=apocalypse::lookAt(eye,target,{0.0f,1.0f,0.0f});
     const apocalypse::Mat4 viewProjection=apocalypse::multiply(projection,view);
     const GLint mvpLocation=glGetUniformLocation(program,"uMVP");
@@ -505,6 +528,7 @@ Java_com_apocalypse_game_NativeGameActivity_00024NativeRenderer_nativeRender(JNI
     glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(6*sizeof(float)));
     glVertexAttribPointer(3,1,GL_FLOAT,GL_FALSE,sizeof(Vertex),(void*)(8*sizeof(float)));
     glDrawArrays(GL_TRIANGLES,0,playerVertexCount);
+    apocalypse::renderVerityCompanion(viewProjection.m,playerX+0.92f,playerZ+0.35f);
     glDisableVertexAttribArray(0);glDisableVertexAttribArray(1);glDisableVertexAttribArray(2);glDisableVertexAttribArray(3);
 }
 extern "C" JNIEXPORT jboolean JNICALL
