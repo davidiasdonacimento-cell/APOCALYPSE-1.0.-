@@ -96,6 +96,16 @@ Os nomes são propostas e devem ser adaptados à estrutura real existente após 
 - Os zumbis das ondas posteriores recebem resistência crescente em etapas; o sistema limita a quantidade simultânea para controlar custo de CPU.
 - Loja: desbloqueio de shurikens ($100, 12 unidades), rifle ($260, 30 munições) e escopeta ($220, 12 cartuchos); recargas custam $45, $80 e $70, respectivamente.
 - Armas podem ser selecionadas no painel da loja. O botão de combate usa a arma selecionada: pulso de curto alcance, shuriken de alcance médio, rifle de longo alcance ou escopeta de alcance curto e dano maior.
-- A resolução atual é arcade instantânea por alcance/alvo mais próximo; projéteis 3D visíveis, trajetória física, animações de arremesso/recuo e efeitos de impacto ainda não foram implementados.
+- O disparo das armas equipadas usa direção de avanço do personagem, cooldown e consumo de munição. Shuriken e rifle geram projéteis de jogo com deslocamento por delta time e detecção de colisão por segmento; a escopeta gera cinco pellets visuais com dispersão arcade simplificada. O pulso mantém resolução imediata em corredor frontal.
+- O motor desenha modelos procedurais 3D da arma equipada junto ao personagem, com variação para rifle, escopeta, shuriken e emissor de pulso. O disparo aplica recuo visual curto; projéteis e impactos usam malhas volumétricas simples sem sprites.
+- Limite: isto é um sistema fictício de gameplay, não uma simulação balística real. Ainda faltam animação esquelética de braços/mãos, mira independente por segundo controle, recarga animada, áudio, decalques e teste visual/performance no Redmi 12.
 - Ondas, saldo, armas e munições ainda não são persistidos entre partidas.
 - Compilação e teste no Redmi 12 permanecem pendentes.
+
+
+## Disparo e armas 3D — 24/11/2026
+- Modelos procedurais gerados em C++ para o equipamento selecionado e desenhados no espaço do mundo, ao lado do personagem, com orientação alinhada à direção de movimento.
+- Rifle e shuriken avançam como projéteis temporários atualizados por delta time; a escopeta cria cinco projéteis arcade com dispersão visual. Os projéteis colidem com zumbis por distância ao segmento percorrido e desaparecem ao atingir alvo ou limite de alcance.
+- Impactos geram flashes volumétricos temporários; o disparo produz recuo visual e consome a munição da arma ativa. Recompensa de $30 continua sendo aplicada uma única vez quando um zumbi é derrotado.
+- O modelo visual muda conforme a arma selecionada e mantém a integração com os IDs da loja (shuriken $100, rifle $260, escopeta $220).
+- Pendências: mira independente, animação esquelética de braços/mãos, recarga animada, áudio, colisão dos projéteis com cenário, calibração visual e teste no dispositivo. Não marcar como concluído antes do CI e do teste físico.
