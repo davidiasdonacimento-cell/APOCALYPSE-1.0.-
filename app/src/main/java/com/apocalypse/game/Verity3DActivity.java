@@ -156,7 +156,8 @@ public final class Verity3DActivity extends Activity {
         static { System.loadLibrary("apocalypse_engine"); }
         private static native void nativeInit();
         private static native void nativeResize(int width, int height);
-        private static native void nativeRender();\n        private static native void nativeSetAnimation(int mode);
+        private static native void nativeRender();
+        private static native void nativeSetAnimation(int mode);
         @Override public void onSurfaceCreated(GL10 gl, EGLConfig config) { nativeInit(); }
         @Override public void onSurfaceChanged(GL10 gl, int width, int height) { nativeResize(width, height); }
         @Override public void onDrawFrame(GL10 gl) { nativeRender(); }
