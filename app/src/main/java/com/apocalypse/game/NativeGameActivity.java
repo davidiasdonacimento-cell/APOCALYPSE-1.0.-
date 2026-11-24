@@ -152,7 +152,7 @@ public final class NativeGameActivity extends Activity {
         String token=verityPrefs.getString("verity_gateway_token","").trim();
         if(endpoint.isEmpty() || token.isEmpty()) return;
         ambientRequestRunning=true;
-        final String context=NativeRenderer.getHud();
+        final String context=hud==null?"":hud.getText().toString();
         verityIo.execute(()->{
             HttpURLConnection connection=null;
             try {
