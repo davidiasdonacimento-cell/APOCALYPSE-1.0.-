@@ -63,6 +63,8 @@ public final class VeritySceneActivity extends Activity {
         voice.setOnClickListener(v->{voiceEnabled=!voiceEnabled;prefs.edit().putBoolean("verity_voice",voiceEnabled).apply();voice.setText(voiceEnabled?"VOZ: LIGADA":"VOZ: DESLIGADA");});
         Button endpoint=new Button(this);endpoint.setText("CONFIGURAR IA (ENDPOINT COMPATÍVEL)");controls.addView(endpoint);
         endpoint.setOnClickListener(v->configureEndpoint());
+        Button testConnection=new Button(this);testConnection.setText("TESTAR CONEXÃO DA IA");controls.addView(testConnection);
+        testConnection.setOnClickListener(v->testGateway());
         Button back=new Button(this);back.setText("VOLTAR AO LOBBY");controls.addView(back);back.setOnClickListener(v->finish());
         root.addView(controls);setContentView(root);
         try { history.put(new JSONObject().put("role","system").put("content",SYSTEM_PROMPT)); } catch(Exception ignored) {}
@@ -76,6 +78,29 @@ public final class VeritySceneActivity extends Activity {
         }
         if(getIntent().getBooleanExtra("settings",false))configureEndpoint();
     }
+    private String normalizeEndpoint(String raw) throws Exception {
+        String value=raw.trim();
+        if(value.isEmpty())throw new IllegalArgumentException("Informe o endereço do Render.");
+        if(!value.contains("://"))value="https://"+value;
+        URL parsed=new URL(value);
+        if(!"https".equalsIgnoreCase(parsed.getProtocol())&&!"http".equalsIgnoreCase(parsed.getProtocol()))
+            throw new IllegalArgumentException("Use um endereço HTTPS do Render.");
+        if(parsed.getHost().isEmpty())throw new IllegalArgumentException("Endereço inválido.");
+        String clean=value.replaceAll("/+$","");
+        if(clean.endsWith("/health"))clean=clean.substring(0,clean.length()-7);
+        if(!clean.endsWith("/v1/chat/completions"))clean+="/v1/chat/completions";
+        return clean;
+    }
+    private String healthUrl(String endpoint){
+        return endpoint.substring(0,endpoint.length()-"/v1/chat/completions".length())+"/health";
+    }
+    private String readBody(java.io.InputStream stream) throws Exception {
+        if(stream==null)return "";
+        BufferedReader reader=new BufferedReader(new InputStreamReader(stream,StandardCharsets.UTF_8));
+        StringBuilder raw=new StringBuilder();String line;
+        while((line=reader.readLine())!=null)raw.append(line);
+        reader.close();return raw.toString();
+    }
     private void configureEndpoint(){
         LinearLayout form=new LinearLayout(this);
         form.setOrientation(LinearLayout.VERTICAL);
@@ -83,23 +108,53 @@ public final class VeritySceneActivity extends Activity {
         final EditText field=new EditText(this);
         field.setSingleLine(true);
         field.setText(prefs.getString("verity_endpoint",""));
-        field.setHint("URL /v1/chat/completions");
+        field.setHint("https://seu-servico.onrender.com");
         form.addView(field);
         final EditText token=new EditText(this);
         token.setSingleLine(true);
-        token.setInputType( android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        token.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
         token.setText(prefs.getString("verity_gateway_token",""));
-        token.setHint("Token privado do gateway Render");
+        token.setHint("VERITY_GATEWAY_TOKEN");
         form.addView(token);
         new android.app.AlertDialog.Builder(this).setTitle("Conectar API da VERITY")
-          .setMessage("Informe o endereço do serviço Render e o token privado configurado nele. Não use a chave do provedor de IA neste campo.")
+          .setMessage("Cole o domínio do serviço Render ou a URL completa. Informe o VERITY_GATEWAY_TOKEN do mesmo serviço. A chave do provedor fica somente no Render.")
           .setView(form).setNegativeButton("Cancelar",null).setPositiveButton("Salvar",(d,w)->{
-              String url=field.getText().toString().trim();
-              String accessToken=token.getText().toString().trim();
-              prefs.edit().putString("verity_endpoint",url)
-                  .putString("verity_gateway_token",accessToken).apply();
-              setStatus(url.isEmpty()?"Endpoint não configurado.":"API salva. A conexão será testada ao enviar uma mensagem.");
+              try{
+                  String endpoint=normalizeEndpoint(field.getText().toString());
+                  String accessToken=token.getText().toString().trim();
+                  prefs.edit().putString("verity_endpoint",endpoint)
+                      .putString("verity_gateway_token",accessToken).apply();
+                  setStatus("Endereço salvo. Toque em TESTAR CONEXÃO DA IA.");
+              }catch(Exception e){setStatus("Configuração inválida: "+e.getMessage());}
           }).show();
+    }
+    private void testGateway(){
+        String endpoint=prefs.getString("verity_endpoint","").trim();
+        if(endpoint.isEmpty()){setStatus("Configure primeiro o domínio do Render.");return;}
+        setStatus("Verificando serviço e variáveis da VERITY…");
+        io.execute(()->{
+            HttpURLConnection c=null;
+            try{
+                c=(HttpURLConnection)new URL(healthUrl(endpoint)).openConnection();
+                c.setRequestMethod("GET");c.setConnectTimeout(12000);c.setReadTimeout(15000);
+                int code=c.getResponseCode();
+                String raw=readBody(code>=200&&code<300?c.getInputStream():c.getErrorStream());
+                if(code<200||code>=300)throw new IllegalStateException("Health HTTP "+code+": "+raw);
+                JSONObject h=new JSONObject(raw);
+                boolean model=h.optBoolean("model_configured",false);
+                boolean key=h.optBoolean("provider_key_configured",false);
+                boolean auth=h.optBoolean("gateway_auth_configured",false);
+                String result="Gateway online • modelo/URL: "+(model?"OK":"FALTA")+
+                    " • chave do provedor: "+(key?"OK":"FALTA")+
+                    " • token do gateway: "+(auth?"OK":"FALTA");
+                setStatus(result);
+                runOnUiThread(()->addMessage("DIAGNÓSTICO",result,false));
+            }catch(Exception e){
+                String detail=e.getMessage()==null?e.getClass().getSimpleName():e.getMessage();
+                setStatus("Teste da IA falhou: "+detail);
+                runOnUiThread(()->addMessage("DIAGNÓSTICO",detail,false));
+            }finally{if(c!=null)c.disconnect();}
+        });
     }
     private void sendMessage(){
         String message=input.getText().toString().trim();if(message.isEmpty())return;
@@ -109,28 +164,51 @@ public final class VeritySceneActivity extends Activity {
     }
     private void requestVerity(String userMessage){
         String endpoint=prefs.getString("verity_endpoint","").trim();
-        if(endpoint.isEmpty()){setStatus("Configure um endpoint de IA generativa.");return;}
+        String gatewayToken=prefs.getString("verity_gateway_token","").trim();
+        if(endpoint.isEmpty()){setStatus("Configure o endereço do gateway da VERITY.");return;}
+        if(gatewayToken.isEmpty()){setStatus("Falta o VERITY_GATEWAY_TOKEN do Render. Abra CONFIGURAR IA.");return;}
         setStatus("VERITY está pensando…");
         io.execute(()->{
             HttpURLConnection c=null;
             try{
-                JSONObject body=new JSONObject();body.put("model","local-model");body.put("messages",history);
-                body.put("temperature",0.85);body.put("stream",false);
-                c=(HttpURLConnection)new URL(endpoint).openConnection();c.setRequestMethod("POST");c.setConnectTimeout(12000);c.setReadTimeout(45000);
+                JSONObject body=new JSONObject();body.put("model","apocalypse-verity");
+                body.put("messages",history);body.put("temperature",0.75);body.put("stream",false);
+                c=(HttpURLConnection)new URL(endpoint).openConnection();
+                c.setRequestMethod("POST");c.setConnectTimeout(15000);c.setReadTimeout(80000);
                 c.setDoOutput(true);c.setRequestProperty("Content-Type","application/json");
-                String gatewayToken=prefs.getString("verity_gateway_token","").trim();
-                if(!gatewayToken.isEmpty())c.setRequestProperty("Authorization","Bearer "+gatewayToken);
+                c.setRequestProperty("Accept","application/json");
+                c.setRequestProperty("Authorization","Bearer "+gatewayToken);
                 try(OutputStream os=c.getOutputStream()){os.write(body.toString().getBytes(StandardCharsets.UTF_8));}
-                int code=c.getResponseCode();if(code<200||code>=300)throw new IllegalStateException("Servidor respondeu HTTP "+code);
-                BufferedReader reader=new BufferedReader(new InputStreamReader(c.getInputStream(),StandardCharsets.UTF_8));
-                StringBuilder raw=new StringBuilder();String line;while((line=reader.readLine())!=null)raw.append(line);
-                JSONObject response=new JSONObject(raw.toString());
-                String answer=response.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content").trim();
-                if(answer.isEmpty())throw new IllegalStateException("A IA retornou uma resposta vazia.");
+                int code=c.getResponseCode();
+                String raw=readBody(code>=200&&code<300?c.getInputStream():c.getErrorStream());
+                if(code<200||code>=300){
+                    String detail="HTTP "+code;
+                    try{
+                        JSONObject err=new JSONObject(raw).optJSONObject("error");
+                        if(err!=null){
+                            String msg=err.optString("message","");
+                            if(!msg.isEmpty())detail+=" • "+msg;
+                            int provider=err.optInt("provider_status",0);
+                            if(provider>0)detail+=" (provedor HTTP "+provider+")";
+                        }else if(!raw.isEmpty())detail+=" • "+raw.substring(0,Math.min(240,raw.length()));
+                    }catch(Exception ignored){if(!raw.isEmpty())detail+=" • "+raw.substring(0,Math.min(240,raw.length()));}
+                    if(code==401)detail+=" • confira VERITY_GATEWAY_TOKEN.";
+                    if(code==503)detail+=" • confira VERITY_UPSTREAM_URL, VERITY_API_KEY e VERITY_MODEL no Render.";
+                    throw new IllegalStateException(detail);
+                }
+                JSONObject response=new JSONObject(raw);
+                JSONArray choices=response.optJSONArray("choices");
+                if(choices==null||choices.length()==0)throw new IllegalStateException("O provedor não retornou choices. Resposta: "+raw.substring(0,Math.min(220,raw.length())));
+                JSONObject message=choices.getJSONObject(0).optJSONObject("message");
+                String answer=message==null?"":message.optString("content","").trim();
+                if(answer.isEmpty())throw new IllegalStateException("A IA retornou conteúdo vazio ou formato incompatível.");
                 history.put(new JSONObject().put("role","assistant").put("content",answer));
                 runOnUiThread(()->{addMessage("VERITY",answer,false);setStatus("VERITY respondeu por IA generativa.");if(voiceEnabled&&ttsReady)tts.speak(answer,TextToSpeech.QUEUE_ADD,null,"verity-response");});
-            }catch(Exception e){setStatus("Falha na IA: "+e.getMessage());runOnUiThread(()->addMessage("CONEXÃO", "Não consegui obter uma resposta generativa. Verifique o endpoint e a conexão.",false));}
-            finally{if(c!=null)c.disconnect();}
+            }catch(Exception e){
+                String detail=e.getMessage()==null?e.getClass().getSimpleName():e.getMessage();
+                setStatus("Falha na IA: "+detail);
+                runOnUiThread(()->addMessage("ERRO DA IA",detail,false));
+            }finally{if(c!=null)c.disconnect();}
         });
     }
     @Override protected void onDestroy(){if(tts!=null){tts.stop();tts.shutdown();}io.shutdownNow();super.onDestroy();}
