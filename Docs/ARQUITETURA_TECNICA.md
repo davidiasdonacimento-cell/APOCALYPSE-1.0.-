@@ -90,3 +90,12 @@ Antes de ampliar o projeto, a primeira prova técnica deverá compilar um aplica
 - Sistemas de sobrevivência da Fase 3: **código implementado e integrado; compilação/teste pendentes**.
 - Lobby 3D com Verity e interações animadas: **pendente**.
 - APK: **não gerado**.
+
+
+## Pipeline inicial de materiais e UV — 24/11/2026
+- O vértice do renderer recebeu coordenadas UV e um identificador de material, mantendo posição e cor.
+- O shader OpenGL ES 3.0 recebe UV/material e seleciona entre três mapas tileáveis: vegetação, concreto e asfalto.
+- O terreno e as superfícies planas recebem UVs proporcionais à dimensão para evitar esticar uma textura sobre áreas grandes.
+- Os três mapas iniciais são padrões compactos gerados em memória no arranque; não adicionam arquivos de imagem nem bytes artificiais ao APK.
+- Malhas sem material continuam no slot neutro para preservar personagens, zumbis e props existentes.
+- Limitação explícita: esses mapas são texturas procedurais iniciais de 64 × 64, não fotografias nem texturas artísticas de alta resolução. Ainda não existe importador OBJ/glTF, leitura de imagens externas, mapas normais/roughness/metallic ou materiais PBR completos.
