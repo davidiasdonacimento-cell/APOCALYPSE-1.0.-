@@ -1,8 +1,16 @@
 # APOCALYPSE 1.0
 
-Projeto de jogo de sobrevivência zumbi em mundo aberto, desenvolvido com Unreal Engine 5.8 e com Android como plataforma-alvo.
+Jogo de sobrevivência zumbi para Android, com mundo explorável, combate, coleta de recursos, inventário, equipamentos e uma companheira de IA chamada VERITY.
 
-> **Estado atual:** repositório inicializado com planejamento. Nenhuma compilação Unreal ou APK foi produzida ainda.
+> **Estado real do projeto:** este repositório contém planejamento. Ainda não há implementação de gameplay, compilação validada ou APK.
+
+## Direção técnica — corrigida
+
+- **Não usar Unreal Engine.** A referência a Unreal Engine 5.8 que apareceu na primeira versão deste README foi um erro e está descartada.
+- O objetivo é desenvolver e compilar para Android, priorizando o fluxo de trabalho pelo próprio celular, sem exigir um PC.
+- O usuário pediu para aproveitar a mesma base/motor do BATTLE UNIVERSE. Antes de declarar qual tecnologia será usada, é necessário inspecionar o código real do BATTLE UNIVERSE. O nome do motor e a composição exata da tecnologia ainda não foram verificados.
+- Java, C++, OpenGL ES e Gradle foram mencionados anteriormente como possíveis partes da base Android do BATTLE, mas isso não constitui confirmação técnica.
+- Nenhuma ferramenta de compilação completa diretamente no Android foi validada até agora. A viabilidade precisa ser comprovada antes de prometer APK.
 
 ## Visão do jogo
 
@@ -23,11 +31,11 @@ A experiência deve começar sempre em um lobby. A partida só começa quando o 
 - Exibir as mensagens na interface.
 - Permitir editar o contexto pessoal e controlar histórico/memórias.
 - Oferecer configurações de voz, volume e conversas automáticas.
-- Ter funcionamento híbrido: recursos locais/offline e IA generativa opcional por endpoint/modelo local compatível, sem serviço pago obrigatório.
-- Usar TTS disponível no Android como opção de voz; reconhecer que TTS não é geração de diálogo.
+- Ter funcionamento híbrido: recursos locais/offline e IA generativa opcional por modelo local ou endpoint compatível, sem serviço pago obrigatório.
+- Usar TTS disponível no Android como opção de voz; TTS não é geração de diálogo.
 - O reconhecimento de fala pelo microfone é opcional e deve ser implementado separadamente.
 
-**Limite técnico explícito:** respostas offline pré-programadas são apenas fallback e não devem ser apresentadas como IA generativa completa. A geração local depende de um modelo/servidor disponível no dispositivo ou na rede.
+**Limite técnico:** respostas offline pré-programadas são apenas fallback e não devem ser apresentadas como IA generativa completa. A geração local depende de um modelo/servidor disponível no dispositivo ou na rede.
 
 ### Lobby
 
@@ -37,7 +45,7 @@ A experiência deve começar sempre em um lobby. A partida só começa quando o 
 - Área de conversa com VERITY, com histórico e contexto editável.
 - Persistência local de preferências e conversas.
 - CONTINUAR só deve aparecer/funcionar quando houver progresso válido.
-- INICIAR JOGO deve fazer a transição explícita para o mapa de gameplay.
+- INICIAR JOGO deve fazer a transição explícita para o gameplay.
 
 ### Gameplay e sobrevivência
 
@@ -65,7 +73,7 @@ Manter módulos separados por responsabilidade, evitando tanto um arquivo monol�
 |---|---|
 | Core | Inicialização, ciclo de vida e configuração |
 | World | Mundo, mapas e exploração |
-| Survival | Necessidades e progressão de sobrevivência |
+| Survival | Sistemas de sobrevivência e progressão |
 | Zombie | IA e comportamento dos inimigos |
 | Combat | Combate, dano e armas |
 | Inventory | Itens, coleta e armazenamento |
@@ -75,10 +83,23 @@ Manter módulos separados por responsabilidade, evitando tanto um arquivo monol�
 | Save | Persistência e migração de dados |
 | UI | Interfaces e configurações |
 
+## Plano de desenvolvimento
+
+1. **Auditoria da base:** inspecionar o repositório BATTLE UNIVERSE para identificar a tecnologia real e o que pode ser reutilizado sem quebrar o projeto original.
+2. **Prova de compilação Android:** validar uma compilação mínima pelo próprio celular, sem PC, antes de expandir o código.
+3. **Fundação:** organizar módulos, inicialização, configurações e persistência.
+4. **Lobby:** menu inicial, navegação, configurações e bloqueio de início automático.
+5. **Gameplay básico:** personagem, mundo, navegação e ciclo de jogo.
+6. **Zumbis e combate:** IA, percepção, vida, dano e integração de armas.
+7. **Inventário:** itens, coleta, armazenamento e equipamentos.
+8. **VERITY:** companheira, percepção, suporte, diálogo, memória e voz.
+9. **Integração e otimização:** estabilidade, memória, desempenho e tratamento de falhas.
+10. **Validação final:** compilação real, instalação e testes no Android.
+
 ## Diretrizes de engenharia
 
-- Motor planejado: Unreal Engine 5.8.
-- Plataforma-alvo: Android.
+- Priorizar compatibilidade com Android e compilação pelo celular.
+- Não trocar o motor/base do BATTLE por suposição; primeiro inspecionar o código real.
 - Projetar para desempenho e memória limitados de dispositivos móveis.
 - Preferir operações assíncronas para tarefas que possam bloquear o jogo.
 - Validar dados antes de salvar ou carregar.
@@ -88,31 +109,16 @@ Manter módulos separados por responsabilidade, evitando tanto um arquivo monol�
 - Não afirmar que houve compilação, teste em aparelho ou geração de APK sem evidência real.
 - Preservar sistemas existentes; mudanças destrutivas exigem autorização.
 
-## Plano de desenvolvimento
-
-1. **Fundação:** estrutura Unreal, módulos, configurações Android e verificação do ambiente de build.
-2. **Lobby:** menu inicial, navegação, configurações e bloqueio de início automático.
-3. **Gameplay básico:** personagem, mapa de teste, navegação e ciclo de jogo.
-4. **Zumbis e combate:** IA, percepção, vida, dano e integração de armas.
-5. **Inventário:** itens, coleta, armazenamento e equipamentos.
-6. **VERITY:** companheira, percepção, suporte, diálogo, memória e voz.
-7. **Integração:** fluxo lobby-gameplay, persistência, tratamento de falhas e otimização.
-8. **Validação Android:** build real, instalação e testes no dispositivo-alvo.
-
 ## Critérios de conclusão
 
-Um recurso só será considerado concluído quando:
-- estiver implementado no projeto;
-- compilar no ambiente Unreal 5.8 configurado;
-- tiver comportamento verificado;
-- tiver tratamento básico de falhas;
-- não depender de um serviço pago obrigatório, quando isso for requisito;
-- estiver testado no Android quando aplicável.
+Um recurso só será considerado concluído quando estiver implementado, integrado, compilado e testado no ambiente-alvo, com tratamento básico de falhas. A compilação pelo celular deve ser demonstrada antes de assumir que o fluxo é viável.
 
 ## Estado inicial
 
-- Repositório novo confirmado.
+- Repositório APOCALYPSE 1.0 criado.
 - Planejamento registrado neste README.
+- Referência a Unreal Engine removida e explicitamente descartada.
+- Tecnologia do BATTLE UNIVERSE: pendente de inspeção do código real.
+- Compilação completa diretamente no Android: ainda não validada.
 - Código de jogo: ainda não adicionado.
-- Ambiente de compilação Unreal/Android: ainda não validado.
 - APK: ainda não gerado.
