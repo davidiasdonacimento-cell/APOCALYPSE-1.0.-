@@ -15,6 +15,19 @@ import android.os.Looper;
 import android.graphics.Color;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.content.SharedPreferences;
+import android.speech.tts.TextToSpeech;
+import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -22,6 +35,20 @@ public final class NativeGameActivity extends Activity {
     private GameSurface surface;
     private Joystick joystick;
     private TextView hud;
+    private TextView veritySpeech;
+    private TextToSpeech verityTts;
+    private boolean ttsReady=false;
+    private boolean verityVoice=true;
+    private SharedPreferences verityPrefs;
+    private final ExecutorService verityIo=Executors.newSingleThreadExecutor();
+    private volatile boolean ambientRequestRunning=false;
+    private final Runnable ambientVerity = new Runnable() {
+        @Override public void run() {
+            if (isFinishing() || isDestroyed()) return;
+            requestAmbientVerity();
+            hudHandler.postDelayed(this, 90000L);
+        }
+    };
     private final Handler hudHandler = new Handler(Looper.getMainLooper());
     private final Runnable hudUpdater = new Runnable() { @Override public void run() { if (hud != null) hud.setText(NativeRenderer.getHud()); hudHandler.postDelayed(this, 300); } };
 
@@ -29,6 +56,14 @@ public final class NativeGameActivity extends Activity {
         super.onCreate(state);
         getWindow().setStatusBarColor(Color.BLACK);
         getWindow().setNavigationBarColor(Color.BLACK);
+        verityPrefs=getSharedPreferences("apocalypse_settings",MODE_PRIVATE);
+        verityVoice=verityPrefs.getBoolean("verity_voice",true);
+        verityTts=new TextToSpeech(this,result->{
+            if(result==TextToSpeech.SUCCESS){
+                int language=verityTts.setLanguage(new Locale("pt","BR"));
+                ttsReady=language!=TextToSpeech.LANG_MISSING_DATA&&language!=TextToSpeech.LANG_NOT_SUPPORTED;
+            }
+        });
         FrameLayout frame = new FrameLayout(this);
         surface = new GameSurface();
         frame.addView(surface, new FrameLayout.LayoutParams(-1, -1));
@@ -40,6 +75,31 @@ public final class NativeGameActivity extends Activity {
         overlay.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
         overlay.setPadding(12, 18, 12, 12);
         frame.addView(overlay);
+
+        veritySpeech = new TextView(this);
+        veritySpeech.setTextColor(Color.WHITE);
+        veritySpeech.setTextSize(14);
+        veritySpeech.setGravity(Gravity.CENTER);
+        veritySpeech.setPadding(14,10,14,10);
+        veritySpeech.setBackgroundColor(0xCC101B2A);
+        veritySpeech.setVisibility(View.GONE);
+        FrameLayout.LayoutParams speechParams = new FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT,
+            Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+        speechParams.setMargins(180,0,180,(int)(150*getResources().getDisplayMetrics().density));
+        frame.addView(veritySpeech,speechParams);
+
+        Button voiceToggle = new Button(this);
+        voiceToggle.setText(verityVoice ? "VERITY: VOZ ON" : "VERITY: VOZ OFF");
+        FrameLayout.LayoutParams voiceParams = new FrameLayout.LayoutParams(-2,-2,Gravity.TOP|Gravity.END);
+        voiceParams.setMargins(0,12,12,0);
+        frame.addView(voiceToggle,voiceParams);
+        voiceToggle.setOnClickListener(v->{
+            verityVoice=!verityVoice;
+            verityPrefs.edit().putBoolean("verity_voice",verityVoice).apply();
+            voiceToggle.setText(verityVoice ? "VERITY: VOZ ON" : "VERITY: VOZ OFF");
+            if(!verityVoice && verityTts!=null)verityTts.stop();
+        });
 
         hud = new TextView(this);
         hud.setTextColor(Color.WHITE);
@@ -65,8 +125,99 @@ public final class NativeGameActivity extends Activity {
         setContentView(frame);
     }
 
-    @Override protected void onResume() { super.onResume(); if (surface != null) surface.onResume(); hudHandler.post(hudUpdater); }
-    @Override protected void onPause() { hudHandler.removeCallbacks(hudUpdater); if (joystick != null) joystick.release(); if (surface != null) surface.onPause(); super.onPause(); }
+    @Override protected void onResume() {
+        super.onResume();
+        if (surface != null) surface.onResume();
+        hudHandler.post(hudUpdater);
+        hudHandler.postDelayed(ambientVerity,25000L);
+    }
+    @Override protected void onPause() {
+        hudHandler.removeCallbacks(hudUpdater);
+        hudHandler.removeCallbacks(ambientVerity);
+        if (verityTts != null) verityTts.stop();
+        if (joystick != null) joystick.release();
+        if (surface != null) surface.onPause();
+        super.onPause();
+    }
+    @Override protected void onDestroy() {
+        hudHandler.removeCallbacksAndMessages(null);
+        if(verityTts!=null){verityTts.stop();verityTts.shutdown();}
+        verityIo.shutdownNow();
+        super.onDestroy();
+    }
+
+    private void requestAmbientVerity() {
+        if(ambientRequestRunning || isFinishing() || isDestroyed()) return;
+        String endpoint=verityPrefs.getString("verity_endpoint","").trim();
+        String token=verityPrefs.getString("verity_gateway_token","").trim();
+        if(endpoint.isEmpty() || token.isEmpty()) return;
+        ambientRequestRunning=true;
+        final String context=NativeRenderer.getHud();
+        verityIo.execute(()->{
+            HttpURLConnection connection=null;
+            try {
+                JSONArray messages=new JSONArray();
+                messages.put(new JSONObject().put("role","system").put("content",
+                    "Você é VERITY, companheira de sobrevivência do APOCALYPSE. Fale em português brasileiro. " +
+                    "Inicie uma fala espontânea curta e natural (uma ou duas frases), útil e variada. " +
+                    "Use somente o estado do jogo fornecido; não invente acontecimentos, locais ou ações. " +
+                    "Não faça perguntas repetitivas, não narre como se estivesse vendo algo que não consta no estado. " +
+                    "Não use formatação, listas ou emojis. Se não houver nada relevante, responda exatamente [SILENCIO]."));
+                messages.put(new JSONObject().put("role","user").put("content",
+                    "Estado atual da partida (HUD): "+context+
+                    ". Gere uma fala espontânea que faça sentido agora."));
+                JSONObject payload=new JSONObject();
+                payload.put("model","apocalypse-verity");
+                payload.put("messages",messages);
+                payload.put("temperature",0.85);
+                payload.put("max_tokens",90);
+                payload.put("stream",false);
+                connection=(HttpURLConnection)new URL(endpoint).openConnection();
+                connection.setRequestMethod("POST");
+                connection.setConnectTimeout(12000);
+                connection.setReadTimeout(45000);
+                connection.setDoOutput(true);
+                connection.setRequestProperty("Content-Type","application/json");
+                connection.setRequestProperty("Accept","application/json");
+                connection.setRequestProperty("Authorization","Bearer "+token);
+                try(OutputStream out=connection.getOutputStream()){
+                    out.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+                }
+                int status=connection.getResponseCode();
+                java.io.InputStream stream=status>=200&&status<300?connection.getInputStream():connection.getErrorStream();
+                StringBuilder raw=new StringBuilder();
+                if(stream!=null){
+                    try(BufferedReader reader=new BufferedReader(new InputStreamReader(stream,StandardCharsets.UTF_8))){
+                        String line;while((line=reader.readLine())!=null)raw.append(line);
+                    }
+                }
+                if(status<200||status>=300)throw new IllegalStateException("HTTP "+status);
+                JSONObject response=new JSONObject(raw.toString());
+                JSONArray choices=response.optJSONArray("choices");
+                if(choices==null||choices.length()==0)throw new IllegalStateException("Resposta vazia");
+                JSONObject message=choices.getJSONObject(0).optJSONObject("message");
+                String line=message==null?"":message.optString("content","").trim();
+                if(line.isEmpty()||line.equals("[SILENCIO]"))return;
+                runOnUiThread(()->{
+                    if(isFinishing()||isDestroyed())return;
+                    veritySpeech.setText("VERITY  •  "+line);
+                    veritySpeech.setVisibility(View.VISIBLE);
+                    veritySpeech.removeCallbacks(hideVeritySpeech);
+                    veritySpeech.postDelayed(hideVeritySpeech,12000L);
+                    if(verityVoice&&ttsReady&&verityTts!=null)
+                        verityTts.speak(line,TextToSpeech.QUEUE_FLUSH,null,"verity-ambient");
+                });
+            } catch(Exception ignored) {
+                // Falhas temporárias da API não interrompem a partida nem exibem erros repetidos.
+            } finally {
+                if(connection!=null)connection.disconnect();
+                ambientRequestRunning=false;
+            }
+        });
+    }
+    private final Runnable hideVeritySpeech=()->{
+        if(veritySpeech!=null)veritySpeech.setVisibility(View.GONE);
+    };
 
     private final class Joystick extends View {
         private final Paint paint = new Paint(3);
