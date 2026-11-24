@@ -130,7 +130,7 @@ public final class NativeGameActivity extends Activity {
         frame.addView(shopPanel,shopPanelParams);
 
         TextView shopTitle = new TextView(this);
-        shopTitle.setText("LOJA DE SOBREVIVÊNCIA\nGanhe $30 por zumbi derrotado");
+        shopTitle.setText("LOJA DE SOBREVIVÊNCIA\nLimpe a onda para ganhar bônus de dinheiro e itens!");
         shopTitle.setTextColor(Color.WHITE);
         shopTitle.setTextSize(14);
         shopTitle.setPadding(4,4,4,8);
@@ -192,7 +192,7 @@ public final class NativeGameActivity extends Activity {
         shopPanel.addView(selectShotgun);
         selectShotgun.setOnClickListener(v -> selectWeapon(3));
         Button pulse = new Button(this);
-        pulse.setText("PULSO");
+        pulse.setText("ATACAR");
         pulse.setOnClickListener(v -> NativeRenderer.attack());
         FrameLayout.LayoutParams pulseParams = new FrameLayout.LayoutParams(-2, -2, Gravity.BOTTOM | Gravity.END);
         pulseParams.setMargins(0, 0, 22, 38);
@@ -206,7 +206,13 @@ public final class NativeGameActivity extends Activity {
         setContentView(frame);
     }
 
-    private void selectWeapon(int weapon) {\n        boolean selected=NativeRenderer.selectWeapon(weapon);\n        Toast.makeText(this,selected?\"Arma equipada!\":\"Arma bloqueada ou sem munição.\",Toast.LENGTH_SHORT).show();\n        if(hud!=null) hud.setText(NativeRenderer.getHud());\n    }\n\n    private void buyItem(int item,String successMessage) {
+    private void selectWeapon(int weapon) {
+        boolean selected = NativeRenderer.selectWeapon(weapon);
+        Toast.makeText(this, selected ? "Arma equipada!" : "Arma bloqueada ou sem munição.", Toast.LENGTH_SHORT).show();
+        if (hud != null) hud.setText(NativeRenderer.getHud());
+    }
+
+    private void buyItem(int item,String successMessage) {
         boolean bought=NativeRenderer.purchase(item);
         Toast.makeText(this,bought?successMessage:"Dinheiro insuficiente ou limite atingido.",Toast.LENGTH_SHORT).show();
         if(hud!=null) hud.setText(NativeRenderer.getHud());
