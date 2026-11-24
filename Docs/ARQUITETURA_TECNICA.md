@@ -99,3 +99,12 @@ Antes de ampliar o projeto, a primeira prova técnica deverá compilar um aplica
 - Os três mapas iniciais são padrões compactos gerados em memória no arranque; não adicionam arquivos de imagem nem bytes artificiais ao APK.
 - Malhas sem material continuam no slot neutro para preservar personagens, zumbis e props existentes.
 - Limitação explícita: esses mapas são texturas procedurais iniciais de 64 × 64, não fotografias nem texturas artísticas de alta resolução. Ainda não existe importador OBJ/glTF, leitura de imagens externas, mapas normais/roughness/metallic ou materiais PBR completos.
+ 
+## Integração do importador e renderer PBR — 24/11/2026
+- `model_pipeline.cpp` passou a compilar junto do motor; `cgltf` atende glTF 2.0/GLB e o leitor OBJ processa posições, UVs, normais, faces trianguladas e grupos de materiais MTL.
+- O Android `AssetManager` é encaminhado pelo JNI ao renderer nativo para abrir assets empacotados.
+- `model_renderer.cpp` cria VBO/EBO por submalha, carrega as texturas referenciadas quando disponíveis e desenha a geometria importada com shader PBR Cook–Torrance/GGX (albedo, normal, roughness e metallic).
+- Foi adicionado um primeiro modelo OBJ de hospital, com submateriais de concreto, vidro e metal, incluído em `app/src/main/assets/models/`.
+- Quando uma textura não existe, o renderer cria mapa compacto de fallback em memória; isso permite visualizar o pipeline sem adicionar imagens vazias ao APK.
+- Limitações: o modelo de hospital é um primeiro asset de integração, não um edifício artístico de alta fidelidade; ainda faltam mapas artísticos de alta resolução, transparência de vidro, tratamento completo de transformações hierárquicas/skinning e teste visual no Redmi 12.
+- Compilação CI da integração e validação em dispositivo devem ser registradas separadamente.
