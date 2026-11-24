@@ -62,3 +62,21 @@
 - A animação de caminhada é aplicada durante a renderização no mundo.
 - A presença visual foi integrada no código, mas ainda exige validação em aparelho Android real; não declarar como visualmente confirmada antes do teste.
 - O modelo continua procedural/low-poly. Um modelo artístico rigado e texturizado continua pendente.
+
+
+## Companheira durante a partida — fala contextual e distância — 24/11/2026
+- `NativeGameActivity.java` passou a chamar o gateway já configurado em `apocalypse_settings` (`verity_endpoint` e `verity_gateway_token`) durante a partida.
+- Primeira fala automática após 25 segundos; novas tentativas em intervalo de 90 segundos enquanto a Activity está ativa.
+- O prompt recebe somente o HUD real (vida, zumbis e recursos), solicita falas curtas em PT-BR e permite silêncio quando não houver comentário relevante.
+- Text-to-Speech do Android lê as falas; botão VERITY: VOZ ON/OFF controla a voz e salva a preferência compartilhada com o lobby.
+- Uma legenda temporária mostra a fala na tela. Erros transitórios da rede não interrompem a partida nem geram alertas repetitivos.
+- A VERITY foi afastada para 1,72 unidade lateral do jogador e alterna entre idle e caminhada conforme o joystick.
+- O shader da VERITY agora calcula iluminação por derivadas da posição de mundo para dar leitura de volume à malha 3D.
+- A fala automática depende de endpoint/token já configurados, rede disponível, gateway/provedor respondendo e idioma PT-BR instalado no mecanismo TTS do Android.
+
+## Limites que permanecem
+- O jogador, zumbis e VERITY continuam sendo malhas procedurais low-poly; não foram substituídos por personagens artísticos externos.
+- Não há ainda esqueleto glTF com skinning por pesos, blendshapes faciais, animação mocap ou pacote de texturas artísticas de personagem.
+- A animação do jogador não possui ciclo esquelético completo; a locomoção procedural dos zumbis é uma oscilação simplificada.
+- Distância de acompanhamento da VERITY é um offset lateral fixo no espaço do jogador, sem navegação autônoma/evitação de obstáculos.
+- Compilação CI e validação visual/voz no Redmi 12 ainda são obrigatórias.
